@@ -1,24 +1,21 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
 from .models import Article
 from .serializers import ArticleSerializer
+from rest_framework import viewsets
+from .pagination import CustomPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
-@api_view(['POST', 'GET'])
-def article_create_read_list(request):
+class ArticleViewSet(viewsets.ModelViewSet):
     """
-    Creation (POST) and reading (GET) of articles.
+    ViewSet for managing articles via API. 
+    list : paginated list of articles / retrieve : article details / create : registration / update : modification / partial_update : partial modification / destroy : deletion.
     """
-    if request.method == 'POST':
-        # Creation of a new article
-        serializer = ArticleSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]  # Enables filters and ordering
 
-    elif request.method == 'GET':
-        # Retrieves all existing articles
-        articles = Article.objects.all()
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data)
+    filterset_fields = ['title', 'user']  # Fields available for filtering
+    search_fields = ['title', 'description', 'user__username'] # Fields for keyword search
+    ordering_fields = ['title', 'user'] # Fields for ordering
+    ordering = ['title']  # Default ordering

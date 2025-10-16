@@ -18,10 +18,10 @@ class ArticleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("The title must contain at least 5 characters.")
         return value
 
-    def validate_content(self, value):
+    def validate_description(self, value):
         """
-        Ensures that the content is not empty or composed only of spaces.
+        Ensures that the description is not empty or composed only of spaces.
         """
         if not value.strip():
-            raise serializers.ValidationError("Content cannot be empty.")
+            raise serializers.ValidationError("Description cannot be empty.")
         return value
