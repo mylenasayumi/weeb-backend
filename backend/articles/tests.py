@@ -16,7 +16,8 @@ class ArticleViewTests(TestCase):
         Create example of articles.
         """
         self.user = User.objects.create_user(username="testuser", password="testpass")
-
+        self.client.force_login(self.user)
+        
         self.article1 = Article.objects.create(
             title="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             description="Quisque vitae felis vestibulum, auctor erat vitae, feugiat purus..",
