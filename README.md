@@ -2,7 +2,69 @@
 
 *Readme in progress...*
 
+coverage
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
+
+
+
+## INSTALLATION
+1. Clone the repo.
+```bash
+    git clone https://github.com/mylenasayumi/weeb-backend.git <NAME_FOLDER>
+```
+
+2. Go to your new folder
+```bash
+    cd <NAME_FOLDER>
+```
+
+3. Check docker compose installation
+```bash
+    docker compose version
+```
+    If no installation go to:  https://docs.docker.com/compose/install/
+
+4. Copy .env.example to .env
+```bash
+    cp .env.example .env
+```
+
+5. Change variables in .env
+```bash
+    example: MYSQL_DATABASE="My-awesome-database" ...
+```
+
+6. Start services with Docker Compose
+```bash
+    docker compose build && docker compose up
+```
+
+7. Wait until everything is completed and enjoy.
+
+## Use coverage
+1. Run this command
+```bash
+    docker compose exec api coverage run manage.py test
+```
+
+2. Need a report?
+```bash
+    docker compose exec api coverage report
+
+    or
+
+    docker compose exec api coverage html
+
+```
+
+###
+precommit
+pre-commit install
+pre-commit run --all-files
+
 ## Technologies
+    -   Docker Compose
+    -   Mysql
     -   Django
     -   Django Rest Framework
     -   Django Cors Headers
