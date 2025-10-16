@@ -23,4 +23,6 @@ jobs:
 
       - name: Run tests with coverage
         working-directory: backend
+        env:
+          CI: "true"
         run: coverage run manage.py test
