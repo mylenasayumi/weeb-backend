@@ -37,8 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # tiers
     'corsheaders',
     'rest_framework',
+    'django_filters',
+    # apps
+    'users',
+    'articles',
+    'satisfactions',
 ]
 
 MIDDLEWARE = [
@@ -126,3 +132,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5  # Number of articles per page
+}
