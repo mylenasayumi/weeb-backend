@@ -17,7 +17,7 @@ class ArticleViewTests(TestCase):
         """
         self.user = User.objects.create_user(username="testuser", password="testpass")
         self.client.force_login(self.user)
-        
+
         self.article1 = Article.objects.create(
             title="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             description="Quisque vitae felis vestibulum, auctor erat vitae, feugiat purus..",
@@ -58,7 +58,7 @@ class ArticleViewTests(TestCase):
         self.assertIn("title", response.json())
         self.assertEqual(response.json()["user"], self.user.id)
 
-    def test_create_article_invalid_title(self):
+    def test_create_article_invalid_title_failure(self):
         """
         Should reject a title with fewer than 5 characters.
         """
@@ -71,7 +71,7 @@ class ArticleViewTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("title", response.json())
 
-    def test_create_article_empty_description(self):
+    def test_create_article_empty_description_failure(self):
         """
         Should reject an empty description.
         """
@@ -85,7 +85,7 @@ class ArticleViewTests(TestCase):
         self.assertIn("description", response.json())
 
     ############ LIST & RETRIEVE ############
-    def test_list_articles_with_pagination(self):
+    def test_list_articles_with_pagination_success(self):
         """
         Should return a paginated list of articles.
         """
@@ -93,10 +93,10 @@ class ArticleViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("results", data)
-        self.assertIn("total_count", data)
+        self.assertIn("count", data)
         self.assertTrue(len(data["results"]) >= 1)
 
-    def test_retrieve_article(self):
+    def test_retrieve_article_success(self):
         """
         Should return the details of a specific article.
         """
@@ -106,7 +106,7 @@ class ArticleViewTests(TestCase):
         self.assertEqual(response.json()["user"], self.user.id)
 
     ############ SEARCH & ORDERING ############
-    def test_search_article_by_title(self):
+    def test_search_article_by_title_success(self):
         """
         Should filter articles by title using the search parameter.
         """
@@ -115,7 +115,7 @@ class ArticleViewTests(TestCase):
         data = response.json()
         self.assertTrue(any("lorem" in a["title"].lower() for a in data["results"]))
 
-    def test_ordering_articles_by_title(self):
+    def test_ordering_articles_by_title_success(self):
         """
         Should order articles alphabetically by title.
         """
@@ -126,7 +126,7 @@ class ArticleViewTests(TestCase):
         self.assertEqual(titles, sorted(titles))
 
     ############ UPDATE ############
-    def test_update_article(self):
+    def test_update_article_success(self):
         """
         Should update an existing article.
         """
@@ -146,7 +146,7 @@ class ArticleViewTests(TestCase):
         self.assertEqual(self.article1.title, "New Title")
 
     ############ DELETE ############
-    def test_delete_article(self):
+    def test_delete_article_success(self):
         """
         Should delete an existing article.
         """
