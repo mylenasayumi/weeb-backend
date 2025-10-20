@@ -1,7 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
 
-
 class SatisfactionsViewsTest(TestCase):
     def test_index_view_success(self):
         """

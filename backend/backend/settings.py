@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'django_filters',
-    'rest_framework_simplejwt',
     # apps
     'users',
     'articles',
@@ -145,9 +144,8 @@ REST_FRAMEWORK = {
     # Authentification JWT
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # tu peux ajouter d'autres classes si besoin
-        'rest_framework.authentication.SessionAuthentication',  # optionnel
-        'rest_framework.authentication.BasicAuthentication',    # optionnel
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ),
 }
 
