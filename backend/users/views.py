@@ -13,11 +13,6 @@ from .serializer import UserSerializer, UserCreateSerializer
 User = get_user_model()
 
 
-def index(request):
-    """Vue simple pour tester que l’app répond (utilisée dans /api/)."""
-    return HttpResponse("Hello, world. You're at the users index.")
-
-
 class IsSelf(permissions.BasePermission):
     """
     Permission personnalisée : autorise l'accès objet seulement à lui-même.
@@ -36,7 +31,6 @@ class UserViewSet(viewsets.ModelViewSet):
     """
 
     queryset = User.objects.all().order_by("-id")
-    permission_classes = [permissions.AllowAny]
     serializer_class = UserSerializer
 
     def get_permissions(self):

@@ -17,15 +17,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from  rest_framework.routers import DefaultRouter
+
+from users.views import UserViewSet
+
+router = DefaultRouter()
+router.register(r'users', UserViewSet, basename="users")
 
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
+    path("api/", include(router.urls)),
 
-    # APIs 
-    path("api/", include("users.urls")),          # /api/users/...
-    path("api/", include("articles.urls")),       # /api/articles/...
-    path("api/", include("satisfactions.urls")),  # /api/satisfactions/...
+    path("satisfactions/", include('satisfactions.urls')),
+    path("articles/", include('articles.urls')),
 
     # Auth JWT
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),

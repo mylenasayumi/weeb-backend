@@ -1,7 +1,5 @@
 
-# Import du module serializers de DRF
 from rest_framework import serializers
-# Import de la fonction pour récupérer le modèle User personnalisé
 from django.contrib.auth import get_user_model
 
 # Récupère le modèle User défini dans models.py
@@ -9,14 +7,12 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     # Sérialiseur pour afficher ou modifier un utilisateur existant.
     # N'expose pas le mot de passe (hash) dans les réponses API.
     
     class Meta:
-        model = User  # Modèle utilisé
-        fields = ("id", "email", "first_name", "last_name")  # Champs visible
-        read_only_fields = ("id")  # Champs non modifiables
+        model = User
+        fields = ["email", "first_name", "last_name"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -28,7 +24,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User  # Modèle utilisé
-        fields = ("id", "email", "first_name", "last_name", "password")  # Champs exposés
+        fields = ["email", "first_name", "last_name", "password"]
 
     def create(self, validated_data):
         # Récupère et retire le mot de passe des données validées
