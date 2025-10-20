@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from users.views import IsSelf, UserViewSet
@@ -19,6 +19,7 @@ class UsersAPITests(APITestCase):
             first_name="John",
             last_name="Doe",
         )
+        self.client = APIClient()
 
     def test_create_user_success(self):
         """
@@ -133,7 +134,7 @@ class UsersAPITests(APITestCase):
         )
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(expected_output, res.json())
+        self.assertEqual(res.json(), expected_output)
     
         
     def test_get_tokens_bad_pwd_failure(self):
@@ -151,7 +152,7 @@ class UsersAPITests(APITestCase):
         )
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(expected_output, res.json())
+        self.assertEqual(res.json(), expected_output)
     
 
     def test_get_me_url_success(self):

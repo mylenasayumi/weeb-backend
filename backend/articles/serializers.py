@@ -8,7 +8,10 @@ class ArticleSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Article
-        fields = ['id', 'title', 'description', 'image', 'user']  # Fields to include in JSON
+        fields = ['id', 'title', 'description', 'image', 'user']
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }
 
     def validate_title(self, value):
         """

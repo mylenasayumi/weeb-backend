@@ -16,6 +16,6 @@ class UsersModelTest(TestCase):
         """
         Test __str__ method returns correct string.
         """
-        expected_output = "User email: john@example.com, created at: "
-
-        self.assertIn(expected_output, self.user.__str__())
+        expected_output = self.user.__str__()
+        self.assertTrue(expected_output.startswith("User email: john@example.com, created at: "))
+        self.assertIn("john@example.com", expected_output)

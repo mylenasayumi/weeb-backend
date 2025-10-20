@@ -14,6 +14,12 @@ class ArticleViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 
     filterset_fields = ['title', 'user']
-    search_fields = ['title', 'description', 'user__username']
+    search_fields = ['title', 'description', 'user__email', 'user__first_name', 'user__last_name']
     ordering_fields = ['title', 'user']
     ordering = ['title']
+
+    def perform_create(self, serializer):
+        """
+        Associate the current authentified user
+        """
+        serializer.save(user=self.request.user)

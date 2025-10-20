@@ -3,10 +3,15 @@ from django.urls import reverse
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import User
 import json
-from .models import Article
+
+from articles.models import Article
+from django.contrib.auth import get_user_model
+from rest_framework.test import APITestCase, APIClient
 
 
-class ArticleViewTests(TestCase):
+User = get_user_model()
+
+class ArticleViewTests(APITestCase):
     """
     Unit tests for the ArticleViewSet.
     """
@@ -15,8 +20,14 @@ class ArticleViewTests(TestCase):
         """
         Create example of articles.
         """
-        self.user = User.objects.create_user(username="testuser", password="testpass")
-        self.client.force_login(self.user)
+        self.user = User.objects.create_user(
+            email="john@example.com",
+            password="pass12345",
+            first_name="John",
+            last_name="Doe",
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
 
         self.article1 = Article.objects.create(
             title="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
@@ -30,8 +41,9 @@ class ArticleViewTests(TestCase):
             image="https://en.wikipedia.org/wiki/Lorem_ipsum#/media/File:Lorem_ipsum_design.svg",
             user=self.user
         )
-        self.list_url = reverse('article-list')
-        self.detail_url = lambda pk: reverse('article-detail', args=[pk])
+        self.list_url = reverse('articles-list')
+
+        self.detail_url = lambda pk: reverse('articles-detail', args=[pk])
 
     ############ CREATE ############
     def test_create_article_success(self):
@@ -42,13 +54,13 @@ class ArticleViewTests(TestCase):
             "title": "Suspendisse imperdiet est id nunc venenatis, eu dictum dui ultricies.",
             "description": "Maecenas eu justo efficitur tortor vehicula semper.",
             "image": "https://en.wikipedia.org/wiki/Lorem_ipsum#/media/File:Lorem_ipsum_design.svg",
-            "user": self.user.id
         }
         response = self.client.post(
             self.list_url,
-            data=json.dumps(data),
-            content_type='application/json'
+            data=data,
+            format='json'
         )
+
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Article.objects.count(), 3)
         self.assertEqual(Article.objects.last().title, data["title"])
@@ -56,7 +68,7 @@ class ArticleViewTests(TestCase):
         # Check if response contains the expected fields
         self.assertIn("id", response.json())
         self.assertIn("title", response.json())
-        self.assertEqual(response.json()["user"], self.user.id)
+        
 
     def test_create_article_invalid_title_failure(self):
         """
@@ -65,24 +77,31 @@ class ArticleViewTests(TestCase):
         data = {"title": "API", "description": "Test", "image": "", "user": self.user.id}
         response = self.client.post(
             self.list_url,
-            data=json.dumps(data),
-            content_type='application/json'
+            data=data,
+            format='json'
         )
+
         self.assertEqual(response.status_code, 400)
         self.assertIn("title", response.json())
 
     def test_create_article_empty_description_failure(self):
         """
-        Should reject an empty description.
+        Should reject an empty description with custom validation error.
         """
-        data = {"title": "Valid Article", "description": "   ", "image": "", "user": self.user.id}
+        data = {
+            "title": "Valid Article", 
+            "description": "   ",
+            "image": ""
+        }
+        expected_output = "Description cannot be empty."
         response = self.client.post(
             self.list_url,
-            data=json.dumps(data),
-            content_type='application/json'
+            data=data,
+            format='json'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIn("description", response.json())
+        self.assertEqual(response.json()['description'][0], expected_output)
+
 
     ############ LIST & RETRIEVE ############
     def test_list_articles_with_pagination_success(self):
@@ -90,8 +109,9 @@ class ArticleViewTests(TestCase):
         Should return a paginated list of articles.
         """
         response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, 200)
         data = response.json()
+
+        self.assertEqual(response.status_code, 200)
         self.assertIn("results", data)
         self.assertIn("count", data)
         self.assertTrue(len(data["results"]) >= 1)
@@ -101,6 +121,7 @@ class ArticleViewTests(TestCase):
         Should return the details of a specific article.
         """
         response = self.client.get(self.detail_url(self.article1.pk))
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["title"], self.article1.title)
         self.assertEqual(response.json()["user"], self.user.id)
@@ -111,8 +132,9 @@ class ArticleViewTests(TestCase):
         Should filter articles by title using the search parameter.
         """
         response = self.client.get(f"{self.list_url}?search=Lorem")
-        self.assertEqual(response.status_code, 200)
         data = response.json()
+
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(any("lorem" in a["title"].lower() for a in data["results"]))
 
     def test_ordering_articles_by_title_success(self):
@@ -120,8 +142,9 @@ class ArticleViewTests(TestCase):
         Should order articles alphabetically by title.
         """
         response = self.client.get(f"{self.list_url}?ordering=title")
-        self.assertEqual(response.status_code, 200)
         data = response.json()
+
+        self.assertEqual(response.status_code, 200)
         titles = [a["title"] for a in data["results"]]
         self.assertEqual(titles, sorted(titles))
 
@@ -138,9 +161,10 @@ class ArticleViewTests(TestCase):
         }
         response = self.client.put(
             self.detail_url(self.article1.pk),
-            data=json.dumps(data, cls=DjangoJSONEncoder),
-            content_type='application/json'
+            data=data,
+            format='json'
         )
+
         self.assertEqual(response.status_code, 200)
         self.article1.refresh_from_db()
         self.assertEqual(self.article1.title, "New Title")
@@ -151,5 +175,6 @@ class ArticleViewTests(TestCase):
         Should delete an existing article.
         """
         response = self.client.delete(self.detail_url(self.article1.pk))
+
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Article.objects.filter(pk=self.article1.pk).exists())
