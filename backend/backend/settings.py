@@ -82,13 +82,12 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("MYSQL_DATABASE", "weeb_db_dev"),
-        "USER": os.getenv("MYSQL_USER", "user_dev"),
-        "PASSWORD": os.getenv("MYSQL_PASSWORD", "password_dev_strong"),
+        "NAME": os.getenv("MYSQL_DATABASE"),
+        "USER": os.getenv("MYSQL_USER"),
+        "PASSWORD": os.getenv("MYSQL_ROOT_PASSWORD"),
         "HOST": os.getenv("MYSQL_HOST", "db"),
         "PORT": os.getenv("MYSQL_PORT", "3306"),
     }
