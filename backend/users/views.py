@@ -1,10 +1,9 @@
-
-from rest_framework import viewsets, permissions
+from django.contrib.auth import get_user_model
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.contrib.auth import get_user_model
 
-from .serializer import UserSerializer, UserCreateSerializer
+from .serializer import UserCreateSerializer, UserSerializer
 
 User = get_user_model()
 
@@ -13,6 +12,7 @@ class IsSelf(permissions.BasePermission):
     """
     Custom permission that allows users to access/modify their own data.
     """
+
     def has_object_permission(self, request, view, obj):
         return obj.id == getattr(request.user, "id", None)
 
@@ -41,7 +41,9 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserCreateSerializer
         return UserSerializer
 
-    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated]
+    )
     def me(self, request):
         """
         GET /api/users/me

@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.utils import timezone
 
 from .managers import EmailUserManager
@@ -12,8 +12,8 @@ class EmailUser(AbstractUser):
     last_name = models.CharField(max_length=50)
     created_at = models.DateTimeField(default=timezone.now)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     # User our EmailUserManager
     objects = EmailUserManager()
