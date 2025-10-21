@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,8 +39,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # tiers
     "corsheaders",
     "rest_framework",
+    "django_filters",
+    # apps
+    "users",
+    "articles",
+    "satisfactions",
 ]
 
 MIDDLEWARE = [
@@ -138,3 +145,32 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    # Pagination et filtres existants
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 5,
+    # Authentification JWT
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ),
+}
+
+
+# Override the default user model by using our model
+AUTH_USER_MODEL = "users.EmailUser"
+
+AUTHENTICATION_BACKENDS = ["users.backend.EmailBackend"]
+
+SIMPLE_JWT = {
+    # Champ du modèle User à utiliser dans le token
+    "USER_ID_FIELD": "email",
+    # Nom de la clé dans le token
+    "USER_ID_CLAIM": "user_email",
+    # Autres options si besoin
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
