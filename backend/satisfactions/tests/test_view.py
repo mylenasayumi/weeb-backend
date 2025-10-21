@@ -1,0 +1,109 @@
+from django.urls import reverse
+from satisfactions.models import Satisfaction
+from django.contrib.auth import get_user_model
+from rest_framework.test import APITestCase, APIClient
+
+User = get_user_model()
+
+class SatisfactionsViewTests(APITestCase):
+    """
+    Unit tests for the SatisfactionAPIView.
+    """
+    def setUp(self):
+        """
+        Create example of satisfactions.
+        """
+        self.user = User.objects.create_user(
+            email="john@example.com",
+            password="pass12345",
+            first_name="John",
+            last_name="Doe"
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+        self.satisfaction = Satisfaction.objects.create(
+            polarity=1,
+            description="Great experience!",
+            user=self.user
+        )
+        
+        self.list_url = reverse('satisfactions-list')
+        self.detail_url = lambda pk: reverse('satisfactions-detail', args=[pk])
+
+    ############ CREATE ############
+    def test_create_satisfaction_success(self):
+        """
+        Should create a new satisfaction form when valid data is provided.
+        """
+        data = {
+            "polarity": 1,
+            "description": "Good service!"
+        }
+        response = self.client.post(
+            self.list_url,
+            data=data,
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Satisfaction.objects.count(), 2)
+
+    def test_create_satisfaction_invalid_rating_failure(self):
+        """
+        Should reject a satisfaction form with invalid data.
+        """
+        data = {
+            "polarity": 9,
+            "description": "Invalid rating"
+        }
+        response = self.client.post(
+            self.list_url,
+            data=data,
+            format='json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    ############ LIST & RETRIEVE ############
+    def test_list_satisfactions_success(self):
+        """
+        Should return a list of satisfactions.
+        """
+        response = self.client.get(self.list_url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("results", data)
+
+    def test_retrieve_satisfaction_success(self):
+        """
+        Should return the details of a specific satisfaction form.
+        """
+        response = self.client.get(self.detail_url(self.satisfaction.pk))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["polarity"], self.satisfaction.polarity)
+
+    ############ UPDATE ############
+    def test_update_satisfaction_success(self):
+        """
+        Should update an existing satisfactio form.
+        """
+        data = {
+            "polarity": 3,
+            "description": "Updated description"
+        }
+        response = self.client.put(
+            self.detail_url(self.satisfaction.pk),
+            data=data,
+            format='json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.satisfaction.refresh_from_db()
+        self.assertEqual(self.satisfaction.polarity, 3)
+
+    ############ DELETE ############
+    def test_delete_satisfaction_success(self):
+        """
+        Should delete an existing satisfaction form.
+        """
+        response = self.client.delete(self.detail_url(self.satisfaction.pk))
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Satisfaction.objects.filter(pk=self.satisfaction.pk).exists())
