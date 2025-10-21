@@ -1,13 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
-from django.shortcuts import get_object_or_404
 
-"""
 
-    Custom djjango backend
-    pour utilsier un email faut avoir un custom bacjend en django
-"""
 class EmailBackend(ModelBackend):
+    """
+    Custom authentication backend that allows users to log in using their eiamil address.
+
+    """
     def authenticate(self, request, username=None, password=None, **kwargs):
         UserModel = get_user_model()
 
@@ -20,6 +19,7 @@ class EmailBackend(ModelBackend):
         except UserModel.DoesNotExist:
             return None
         
+        # Validate the pwd and ensuret the user is active
         if user.check_password(password) and self.user_can_authenticate(user):
             return user
         return None

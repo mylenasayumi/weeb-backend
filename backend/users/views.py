@@ -1,13 +1,9 @@
-# DRF
+
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-# Django
-from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 
-# Serializers
 from .serializer import UserSerializer, UserCreateSerializer
 
 User = get_user_model()
@@ -15,8 +11,7 @@ User = get_user_model()
 
 class IsSelf(permissions.BasePermission):
     """
-    Permission personnalisée : autorise l'accès objet seulement à lui-même.
-    (Non utilisée dans la config actuelle où l’update/destroy sont réservés admin.)
+    Custom permission that allows users to access/modify their own data.
     """
     def has_object_permission(self, request, view, obj):
         return obj.id == getattr(request.user, "id", None)
@@ -24,10 +19,11 @@ class IsSelf(permissions.BasePermission):
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    ViewSet principal pour gérer les utilisateurs via l’API.
-    - list/retrieve : lecture ouverte
-    - create : inscription ouverte
-    - update/partial_update/destroy : réservé aux admins (interdit aux users)
+    Handle CRUD operations on USERS
+        list/retrieve
+        create
+        update/partial_update/destroy
+        me
     """
 
     queryset = User.objects.all().order_by("-id")
@@ -37,7 +33,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return [permissions.AllowAny()]
         elif self.action in ["partial_update", "update", "destroy"]:
-            # réservé aux admins
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
@@ -48,5 +43,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
     def me(self, request):
-        """GET /api/users/me/ — profil de l’utilisateur connecté."""
+        """
+        GET /api/users/me
+        Returns the profil of the current user
+        """
         return Response(UserSerializer(request.user).data)
