@@ -13,7 +13,7 @@ from .utils import (
 )
 
 START_TIME = time.time()
-SAMPLE_SIZE = 1000
+SAMPLE_SIZE = 200
 DATA_FILES = [
     "allocine_french_review.csv",  # https://www.kaggle.com/datasets/djilax/allocine-french-movie-reviews
     "amazon_fr_en_review.csv",  # https://www.kaggle.com/datasets/dargolex/french-reviews-on-amazon-items-and-en-translation
@@ -264,10 +264,10 @@ class Command(BaseCommand):
             ia_files = ["chatgpt", "claude", "lechat"]
             if any(elem in file for elem in ia_files):
                 if "fr" in file:
-                    df_chat_fr = clean_ai_reviews(folder_path + file, "fr")
+                    df_chat_fr = clean_ai_reviews(folder_path + file)
                     dataframe_fr.append(df_chat_fr)
                 else:
-                    df_chat_en = clean_ai_reviews(folder_path + file, "en")
+                    df_chat_en = clean_ai_reviews(folder_path + file)
                     dataframe_en.append(df_chat_en)
                 print_color(
                     f"End of ia reviews after: {time.time() - START_TIME:.2f} sec",
@@ -276,6 +276,15 @@ class Command(BaseCommand):
 
         df_final_fr = pd.concat(dataframe_fr)
         df_final_en = pd.concat(dataframe_en)
+
+        print_color(
+            f"Repartition FR Positive/Negative: {df_final_fr['satisfaction'].value_counts()} ",
+            "yellow",
+        )
+        print_color(
+            f"Repartition EN Positive/Negative: {df_final_en['satisfaction'].value_counts()} ",
+            "yellow",
+        )
 
         df_final_fr.to_csv(folder_path + "dataframe_fr.csv", sep=",", index=False)
         df_final_en.to_csv(folder_path + "dataframe_en.csv", sep=",", index=False)
