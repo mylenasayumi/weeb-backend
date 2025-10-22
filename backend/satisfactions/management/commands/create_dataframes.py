@@ -5,138 +5,178 @@ import numpy as np
 import pandas as pd
 from django.core.management.base import BaseCommand
 
-from .utils import check_files_not_exists, custom_exit, get_translations
+from .utils import (
+    check_files_not_exists,
+    exit_with_error,
+    get_translations,
+    print_color,
+)
 
-STARTS_TIME = time.time()
+START_TIME = time.time()
+SAMPLE_SIZE = 1000
+DATA_FILES = [
+    "allocine_french_review.csv",  # https://www.kaggle.com/datasets/djilax/allocine-french-movie-reviews
+    "amazon_fr_en_review.csv",  # https://www.kaggle.com/datasets/dargolex/french-reviews-on-amazon-items-and-en-translation
+    "french_tweets.csv",  # https://www.kaggle.com/datasets/hbaflast/french-twitter-sentiment-analysis
+    "chatgpt_en.csv",
+    "chatgpt_fr.csv",
+    "claude_fr.csv",
+    "claude_en.csv",
+    "lechat_fr.csv",
+    "lechat_en.csv",
+]
 
 
-def clear_allocine_fr_file(path_file):
+def clean_allocine_reviews(path_file):
+    """
+    Clean the Allociné French reviews dataset:
+    - remove unused columns
+    - rename 'polarity' to 'satisfaction'
+    - sample 1000 rows
+    - translate reviews from French to English
+    Returns:
+        (DataFrame, DataFrame): French and English datasets
+    """
     dataframe = []
 
     try:
         dataframe = pd.read_csv(path_file)
     except:
-        custom_exit(f"Pandas cannot open the following file: {path_file}", STARTS_TIME)
+        exit_with_error(
+            f"Pandas cannot open the following file: {path_file}", START_TIME
+        )
 
-    # Delete useless columns
     dataframe = dataframe.drop("film-url", axis=1)
     dataframe = dataframe.drop("Unnamed: 0", axis=1)
 
-    # Rename column
     dataframe.rename(columns={"polarity": "satisfaction"}, inplace=True)
 
-    # Choose 200 random rows
-    dataframe_200 = dataframe.sample(n=1000, random_state=42)
+    df_200 = dataframe.sample(n=SAMPLE_SIZE, random_state=42)
 
     translations = []
 
-    # Translate french to english
-    translations = get_translations(dataframe_200, "fr", "en")
+    translations = get_translations(df_200, "fr", "en")
 
-    dataframe_200["en"] = translations
+    df_200["en"] = translations
 
-    # Separate dataframe in 2 by droping useless columns
-    dataframe_en_200 = dataframe_200[["satisfaction", "en"]]
-    dataframe_fr_200 = dataframe_200[["satisfaction", "review"]]
+    df_en_200 = df_200[["satisfaction", "en"]]
+    df_fr_200 = df_200[["satisfaction", "review"]]
 
-    # Order dataframe  with first column as satisfaction
     cols_fr = ["satisfaction"] + [
-        col for col in dataframe_fr_200.columns if col != "satisfaction"
+        col for col in df_fr_200.columns if col != "satisfaction"
     ]
-    dataframe_fr_200 = dataframe_fr_200[cols_fr]
+    df_fr_200 = df_fr_200[cols_fr]
 
     cols_en = ["satisfaction"] + [
-        col for col in dataframe_en_200.columns if col != "satisfaction"
+        col for col in df_en_200.columns if col != "satisfaction"
     ]
-    dataframe_en_200 = dataframe_en_200[cols_en]
+    df_en_200 = df_en_200[cols_en]
 
-    return dataframe_fr_200, dataframe_en_200
+    return df_fr_200, df_en_200
 
 
-def clear_amazon_fr_en_file(path_file):
+def clean_amazon_reviews(path_file):
+    """
+    Clean the Amazon French reviews dataset:
+    - transform data 1 to 5 => 0 to 1
+    - rename 'translation' to 'en'
+    - delete 'rating' column
+    - separate datagrame fron English and French
+    Returns:
+        (DataFrame, DataFrame): French and English datasets
+    """
     dataframe = []
 
     try:
         dataframe = pd.read_csv(path_file)
     except:
-        custom_exit(f"Pandas cannot open the following file: {path_file}", STARTS_TIME)
+        exit_with_error(
+            f"Pandas cannot open the following file: {path_file}", START_TIME
+        )
 
-    # Transform data rating (1 to 5) at 0 and 1 only
     dataframe["satisfaction"] = np.where(dataframe["rating"] < 2.5, 0, 1)
 
-    # Rename columns
     dataframe.rename(columns={"translation": "en"}, inplace=True)
 
-    # Delete rating column
     dataframe = dataframe.drop("rating", axis=1)
 
-    # Separate dataframe in 2 by droping useless columns
     dataframe_en = dataframe[["satisfaction", "en"]]
     dataframe_fr = dataframe[["satisfaction", "review"]]
 
-    # Choose 200 random rows
-    dataframe_fr_200 = dataframe_fr.sample(n=1000, random_state=42)
-    dataframe_en_200 = dataframe_en.sample(n=1000, random_state=42)
+    df_fr_200 = dataframe_fr.sample(n=SAMPLE_SIZE, random_state=42)
+    df_en_200 = dataframe_en.sample(n=SAMPLE_SIZE, random_state=42)
 
     # Order dataframe  with first column as satisfaction
     cols_fr = ["satisfaction"] + [
-        col for col in dataframe_fr_200.columns if col != "satisfaction"
+        col for col in df_fr_200.columns if col != "satisfaction"
     ]
-    dataframe_fr_200 = dataframe_fr_200[cols_fr]
+    df_fr_200 = df_fr_200[cols_fr]
 
     cols_en = ["satisfaction"] + [
-        col for col in dataframe_en_200.columns if col != "satisfaction"
+        col for col in df_en_200.columns if col != "satisfaction"
     ]
-    dataframe_en_200 = dataframe_en_200[cols_en]
+    df_en_200 = df_en_200[cols_en]
 
-    return dataframe_fr_200, dataframe_en_200
+    return df_fr_200, df_en_200
 
 
-def clear_tweet_fr_file(path_file):
+def clean_tweeter_reviews(path_file):
+    """
+    Clean the tweets dataset:
+    - rename 'label' to 'satisfaction' & 'text' to 'review'
+    - translate reviews from French to English
+    - separate datagrame fron English and French
+    Returns:
+        (DataFrame, DataFrame): French and English datasets
+    """
     dataframe = []
 
     try:
         dataframe = pd.read_csv(path_file)
     except:
-        custom_exit(f"Pandas cannot open the following file: {path_file}", STARTS_TIME)
+        exit_with_error(
+            f"Pandas cannot open the following file: {path_file}", START_TIME
+        )
 
-    # Rename columns
     dataframe.rename(columns={"label": "satisfaction"}, inplace=True)
     dataframe.rename(columns={"text": "review"}, inplace=True)
 
-    # Choose 200 random rows
-    dataframe_200 = dataframe.sample(n=1000, random_state=42)
+    df_200 = dataframe.sample(n=SAMPLE_SIZE, random_state=42)
 
-    # Translate french to english
-    translations = get_translations(dataframe_200, "fr", "en")
+    translations = get_translations(df_200, "fr", "en")
 
-    dataframe_200["en"] = translations
+    df_200["en"] = translations
 
-    # Create a dataframe per language
-    dataframe_en_200 = dataframe_200[["satisfaction", "en"]]
-    dataframe_fr_200 = dataframe_200[["satisfaction", "review"]]
+    df_en_200 = df_200[["satisfaction", "en"]]
+    df_fr_200 = df_200[["satisfaction", "review"]]
 
     # Order dataframe  with first column as satisfaction
     cols_fr = ["satisfaction"] + [
-        col for col in dataframe_fr_200.columns if col != "satisfaction"
+        col for col in df_fr_200.columns if col != "satisfaction"
     ]
-    dataframe_fr_200 = dataframe_fr_200[cols_fr]
+    df_fr_200 = df_fr_200[cols_fr]
 
     cols_en = ["satisfaction"] + [
-        col for col in dataframe_en_200.columns if col != "satisfaction"
+        col for col in df_en_200.columns if col != "satisfaction"
     ]
-    dataframe_en_200 = dataframe_en_200[cols_en]
+    df_en_200 = df_en_200[cols_en]
 
-    return dataframe_fr_200, dataframe_en_200
+    return df_fr_200, df_en_200
 
 
-def clear_ia_file(path_file, lang):
+def clean_ai_reviews(path_file):
+    """
+    Returns:
+        Dataframe with 'satisfaction' as first column
+    """
     dataframe = []
 
     try:
         dataframe = pd.read_csv(path_file)
     except:
-        custom_exit(f"Pandas cannot open the following file: {path_file}", STARTS_TIME)
+        exit_with_error(
+            f"Pandas cannot open the following file: {path_file}", START_TIME
+        )
 
     # Order dataframe  with first column as satisfaction
     cols = ["satisfaction"] + [
@@ -149,9 +189,22 @@ def clear_ia_file(path_file, lang):
 
 class Command(BaseCommand):
     """
-    This command is used to clear all csv files used
-    to create an classification IA.
-    It deletes useless columnc, bad data, rename columns etc
+    Django management command to clean and prepare all CSV datasets
+    used for training the satisfaction classification AI model.
+
+    This command:
+        - validates all CSV fles
+        - cleans and normalizes data
+        - concatenates all processed dataframes into 2 files
+            * dataframe_fr.csv — containing French reviews
+            * dataframe_en.csv — containing English translations
+
+    How to use it?
+        Using outside of docker when services are running:
+            docker compose exec api python manage.py create_dataframes
+
+        Otherwise:
+            python manage.py create_dataframes
     """
 
     help = "This command checks csv files and clear all datas"
@@ -163,74 +216,62 @@ class Command(BaseCommand):
         if os.path.isfile(folder_path + "dataframe_en.csv") and os.path.isfile(
             folder_path + "dataframe_fr.csv"
         ):
-            print(f"\033[92mAll dataframes are here, no need to create\033[0m")
+            print_color(f"All dataframes are here, no need to create", "green")
             return
 
-        print(f"\033[93m\nStarting Clear Csv Files...\033[0m")
-        csv_files_lst = [
-            "allocine_french_review.csv",  # https://www.kaggle.com/datasets/djilax/allocine-french-movie-reviews
-            "amazon_fr_en_review.csv",  # https://www.kaggle.com/datasets/dargolex/french-reviews-on-amazon-items-and-en-translation
-            "french_tweets.csv",  # https://www.kaggle.com/datasets/hbaflast/french-twitter-sentiment-analysis
-            "chatgpt_en.csv",
-            "chatgpt_fr.csv",
-            "claude_fr.csv",
-            "claude_en.csv",
-            "lechat_fr.csv",
-            "lechat_en.csv",
-        ]
+        print_color(f"Starting Clear Csv Files...", "yellow")
 
         # checks if all files exists
-        check_files_not_exists(csv_files_lst, folder_path)
+        check_files_not_exists(DATA_FILES, folder_path)
 
         dataframe_fr = []
         dataframe_en = []
-        for file in csv_files_lst:
-            print(f"\n\tClearing file: {file}")
+        for file in DATA_FILES:
+            print_color(f"\tClearing file: {file}")
 
             if file == "allocine_french_review.csv":
-                df_allocine_fr, df_allocine_en = clear_allocine_fr_file(
+                df_allocine_fr, df_allocine_en = clean_allocine_reviews(
                     folder_path + file
                 )
 
                 dataframe_fr.append(df_allocine_fr)
                 dataframe_en.append(df_allocine_en)
-                print(
-                    f"\033[94m\tEnd of clear_allocine_fr_file after: {time.time() - STARTS_TIME:.2f}",
-                    "sec \033[0m",
+                print_color(
+                    f"End of clean_allocine_reviews after: {time.time() - START_TIME:.2f} sec",
+                    "blue",
                 )
 
             if file == "amazon_fr_en_review.csv":
-                df_amazon_fr, df_amazon_en = clear_amazon_fr_en_file(folder_path + file)
+                df_amazon_fr, df_amazon_en = clean_amazon_reviews(folder_path + file)
 
                 dataframe_fr.append(df_amazon_fr)
                 dataframe_en.append(df_amazon_en)
-                print(
-                    f"\033[94m\tEnd of clear_amazon_fr_en_file after: {time.time() - STARTS_TIME:.2f}",
-                    "sec \033[0m",
+                print_color(
+                    f"End of clean_amazon_reviews after: {time.time() - START_TIME:.2f} sec",
+                    "blue",
                 )
 
             if file == "french_tweets.csv":
-                df_tweet_fr, df_tweet_en = clear_tweet_fr_file(folder_path + file)
+                df_tweet_fr, df_tweet_en = clean_tweeter_reviews(folder_path + file)
 
                 dataframe_fr.append(df_tweet_fr)
                 dataframe_en.append(df_tweet_en)
-                print(
-                    f"\033[94m\tEnd of clear_tweet_fr_file after: {time.time() - STARTS_TIME:.2f}",
-                    "sec \033[0m",
+                print_color(
+                    f"End of clean_tweeter_reviews after: {time.time() - START_TIME:.2f} sec",
+                    "blue",
                 )
 
             ia_files = ["chatgpt", "claude", "lechat"]
             if any(elem in file for elem in ia_files):
                 if "fr" in file:
-                    df_chat_fr = clear_ia_file(folder_path + file, "fr")
+                    df_chat_fr = clean_ai_reviews(folder_path + file, "fr")
                     dataframe_fr.append(df_chat_fr)
                 else:
-                    df_chat_en = clear_ia_file(folder_path + file, "en")
+                    df_chat_en = clean_ai_reviews(folder_path + file, "en")
                     dataframe_en.append(df_chat_en)
-
-                print(
-                    f"\033[94m\tEnd of chatgpt_file after: {time.time() - STARTS_TIME:.2f}",
-                    "sec \033[0m",
+                print_color(
+                    f"End of ia reviews after: {time.time() - START_TIME:.2f} sec",
+                    "blue",
                 )
 
         df_final_fr = pd.concat(dataframe_fr)
@@ -239,7 +280,7 @@ class Command(BaseCommand):
         df_final_fr.to_csv(folder_path + "dataframe_fr.csv", sep=",", index=False)
         df_final_en.to_csv(folder_path + "dataframe_en.csv", sep=",", index=False)
 
-        print(
-            f"\033[92m\nCreate 2 files: 'dataframe_fr.csv' and 'dataframe_en.csv' in {time.time() - STARTS_TIME:.2f}",
-            "sec \033[0m",
+        print_color(
+            f"\nCreate 2 files: 'dataframe_fr.csv' and 'dataframe_en.csv' in {time.time() - START_TIME:.2f} sec",
+            "green",
         )
