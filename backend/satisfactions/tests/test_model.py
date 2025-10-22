@@ -14,14 +14,17 @@ class SatisfactionsModelTest(TestCase):
         )
 
         self.satisfaction = Satisfaction.objects.create(
-            polarity=1,
+            email="john@example.com",
+            first_name="John",
+            last_name="Doe",
             description="Great experience!",
-            user=self.user
+            user=self.user,
+            polarity=True
         )
 
     def test_get_str_success(self):
         """
         Test __str__ method returns correct string
         """
-        expected_output = f"Polarity: {self.satisfaction.polarity} - {self.satisfaction.description}"
+        expected_output = f"Satisfaction Form: {self.satisfaction.first_name} {self.satisfaction.last_name} sent a satisfaction comment on {self.satisfaction.created_at}."
         self.assertEqual(self.satisfaction.__str__(), expected_output)
