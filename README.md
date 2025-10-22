@@ -57,6 +57,9 @@ coverage
 
 ```
 
+docker compose exec api python manage.py create_ia
+
+
 ###
 precommit
 pre-commit install
