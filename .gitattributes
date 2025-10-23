@@ -1,2 +1,11 @@
-backend/satisfactions/static/*.csv filter=lfs diff=lfs merge=lfs -text
-*.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/amazon_fr_en_review.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/claude_en.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/claude_fr.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/french_tweets.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/lechat_en.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/lechat_fr.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/allocine_french_review.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/chatgpt_en.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/chatgpt_fr.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/dataframe_en.csv filter=lfs diff=lfs merge=lfs -text
+backend/satisfactions/static/dataframe_fr.csv filter=lfs diff=lfs merge=lfs -text

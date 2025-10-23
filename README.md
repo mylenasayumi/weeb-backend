@@ -5,6 +5,13 @@
 coverage
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
+# GIT LFS
+sudo apt install git-lfs
+
+git lfs install
+
+git lfs pull
+
 
 
 ## INSTALLATION
