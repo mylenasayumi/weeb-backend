@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 
+# Delete \r for Windows error vs Linux
 sed -i 's/\r$//' "$0" 2>/dev/null || true
-
-# Create migrations
-python manage.py makemigrations
-
-# Apply migrations
-python manage.py migrate
 
 # Wait database
 echo "Waiting for database..."
@@ -14,6 +9,12 @@ while ! nc -z db 3306; do
   sleep 1 # wait 1 second before checking again
 done
 echo "Database is ready!"
+
+# Create migrations
+python manage.py makemigrations
+
+# Apply migrations
+python manage.py migrate
 
 # Add fixtures
 python manage.py loaddata users/fixtures/users_fixtures.json || true
