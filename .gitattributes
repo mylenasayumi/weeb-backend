@@ -9,3 +9,5 @@ backend/data/chatgpt_en.csv filter=lfs diff=lfs merge=lfs -text
 backend/data/chatgpt_fr.csv filter=lfs diff=lfs merge=lfs -text
 backend/data/dataframe_en.csv filter=lfs diff=lfs merge=lfs -text
 backend/data/dataframe_fr.csv filter=lfs diff=lfs merge=lfs -text
+
+* text=auto eol=lf
