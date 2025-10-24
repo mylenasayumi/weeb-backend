@@ -18,6 +18,9 @@ When starting the project 5 users and 10 articles are generated and put in the d
 other user => mdp = Password12345@
 
 
+# Folder used to save csv files ==> use data/
+DATA_PATH="./data/"
+
 ## INSTALLATION
 1. Clone the repo.
 ```bash
