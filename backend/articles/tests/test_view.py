@@ -1,15 +1,11 @@
-from django.test import TestCase
-from django.urls import reverse
-from django.core.serializers.json import DjangoJSONEncoder
-from django.contrib.auth.models import User
-import json
-
 from articles.models import Article
 from django.contrib.auth import get_user_model
-from rest_framework.test import APITestCase, APIClient
-
+from django.contrib.auth.models import User
+from django.urls import reverse
+from rest_framework.test import APIClient, APITestCase
 
 User = get_user_model()
+
 
 class ArticleViewTests(APITestCase):
     """
@@ -33,17 +29,17 @@ class ArticleViewTests(APITestCase):
             title="Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             description="Quisque vitae felis vestibulum, auctor erat vitae, feugiat purus..",
             image="https://en.wikipedia.org/wiki/Lorem_ipsum#/media/File:Lorem_ipsum_design.svg",
-            user=self.user
+            user=self.user,
         )
         self.article2 = Article.objects.create(
             title="Pellentesque blandit lacus eu porttitor euismod.",
             description="Etiam scelerisque ipsum sit amet consequat ornare.",
             image="https://en.wikipedia.org/wiki/Lorem_ipsum#/media/File:Lorem_ipsum_design.svg",
-            user=self.user
+            user=self.user,
         )
-        self.list_url = reverse('articles-list')
+        self.list_url = reverse("articles-list")
 
-        self.detail_url = lambda pk: reverse('articles-detail', args=[pk])
+        self.detail_url = lambda pk: reverse("articles-detail", args=[pk])
 
     ############ CREATE ############
     def test_create_article_success(self):
@@ -55,11 +51,7 @@ class ArticleViewTests(APITestCase):
             "description": "Maecenas eu justo efficitur tortor vehicula semper.",
             "image": "https://en.wikipedia.org/wiki/Lorem_ipsum#/media/File:Lorem_ipsum_design.svg",
         }
-        response = self.client.post(
-            self.list_url,
-            data=data,
-            format='json'
-        )
+        response = self.client.post(self.list_url, data=data, format="json")
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Article.objects.count(), 3)
@@ -68,18 +60,18 @@ class ArticleViewTests(APITestCase):
         # Check if response contains the expected fields
         self.assertIn("id", response.json())
         self.assertIn("title", response.json())
-        
 
     def test_create_article_invalid_title_failure(self):
         """
         Should reject a title with fewer than 5 characters.
         """
-        data = {"title": "API", "description": "Test", "image": "", "user": self.user.id}
-        response = self.client.post(
-            self.list_url,
-            data=data,
-            format='json'
-        )
+        data = {
+            "title": "API",
+            "description": "Test",
+            "image": "",
+            "user": self.user.id,
+        }
+        response = self.client.post(self.list_url, data=data, format="json")
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("title", response.json())
@@ -88,20 +80,11 @@ class ArticleViewTests(APITestCase):
         """
         Should reject an empty description with custom validation error.
         """
-        data = {
-            "title": "Valid Article", 
-            "description": "   ",
-            "image": ""
-        }
+        data = {"title": "Valid Article", "description": "   ", "image": ""}
         expected_output = "Description cannot be empty."
-        response = self.client.post(
-            self.list_url,
-            data=data,
-            format='json'
-        )
+        response = self.client.post(self.list_url, data=data, format="json")
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()['description'][0], expected_output)
-
+        self.assertEqual(response.json()["description"][0], expected_output)
 
     ############ LIST & RETRIEVE ############
     def test_list_articles_with_pagination_success(self):
@@ -157,12 +140,10 @@ class ArticleViewTests(APITestCase):
             "title": "New Title",
             "description": "Updated description",
             "image": self.article1.image,
-            "user": self.user.id
+            "user": self.user.id,
         }
         response = self.client.put(
-            self.detail_url(self.article1.pk),
-            data=data,
-            format='json'
+            self.detail_url(self.article1.pk), data=data, format="json"
         )
 
         self.assertEqual(response.status_code, 200)

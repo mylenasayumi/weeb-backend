@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-
 User = get_user_model()
+
 
 class EmailUserManagerTest(TestCase):
     def setUp(self):
@@ -13,7 +13,7 @@ class EmailUserManagerTest(TestCase):
             email="john@example.com",
             password="pass12345",
             first_name="John",
-            last_name="Doe"
+            last_name="Doe",
         )
         self.assertEqual(user.email, "john@example.com")
         self.assertTrue(user.check_password("pass12345"))
@@ -25,10 +25,7 @@ class EmailUserManagerTest(TestCase):
 
         with self.assertRaises(ValueError) as err:
             self.User.objects.create_user(
-                email="",
-                password="pass12345",
-                first_name="John",
-                last_name="Doe"
+                email="", password="pass12345", first_name="John", last_name="Doe"
             )
 
         self.assertEqual(str(err.exception), expected_output)
@@ -41,7 +38,7 @@ class EmailUserManagerTest(TestCase):
                 email="john@example.com",
                 password="",
                 first_name="John",
-                last_name="Doe"
+                last_name="Doe",
             )
 
         self.assertEqual(str(err.exception), expected_output)
@@ -54,7 +51,7 @@ class EmailUserManagerTest(TestCase):
                 email="john@example.com",
                 password="pass12345",
                 first_name="",
-                last_name="Doe"
+                last_name="Doe",
             )
 
         self.assertEqual(str(err.exception), expected_output)
@@ -67,7 +64,7 @@ class EmailUserManagerTest(TestCase):
                 email="john@example.com",
                 password="pass12345",
                 first_name="John",
-                last_name=""
+                last_name="",
             )
 
         self.assertEqual(str(err.exception), expected_output)
@@ -77,7 +74,7 @@ class EmailUserManagerTest(TestCase):
             email="admin@example.com",
             password="pass12345",
             first_name="John",
-            last_name="Doe"
+            last_name="Doe",
         )
         self.assertTrue(superuser.is_staff)
         self.assertTrue(superuser.is_superuser)
@@ -93,7 +90,7 @@ class EmailUserManagerTest(TestCase):
                 password="adminpass",
                 first_name="Admin",
                 last_name="User",
-                is_staff=False
+                is_staff=False,
             )
         self.assertEqual(str(cm.exception), expected_output)
 
@@ -106,6 +103,6 @@ class EmailUserManagerTest(TestCase):
                 password="adminpass",
                 first_name="Admin",
                 last_name="User",
-                is_superuser=False
+                is_superuser=False,
             )
         self.assertEqual(str(cm.exception), expected_output)

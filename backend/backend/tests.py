@@ -1,21 +1,19 @@
+import importlib
 import unittest
 from unittest import mock
-import importlib
-from django.test import SimpleTestCase
+
 from django.conf import settings
+from django.test import SimpleTestCase
+
 
 class SettingsCITest(unittest.TestCase):
     def test_ci_database_settings(self):
         with mock.patch.dict("os.environ", {"CI": "true"}):
             settings = importlib.reload(importlib.import_module("backend.settings"))
             self.assertEqual(
-                settings.DATABASES["default"]["ENGINE"],
-                "django.db.backends.sqlite3"
+                settings.DATABASES["default"]["ENGINE"], "django.db.backends.sqlite3"
             )
-            self.assertEqual(
-                settings.DATABASES["default"]["NAME"],
-                ":memory:"
-            )
+            self.assertEqual(settings.DATABASES["default"]["NAME"], ":memory:")
 
 
 class SettingsCoverageTest(SimpleTestCase):
