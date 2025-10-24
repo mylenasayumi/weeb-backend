@@ -1,0 +1,112 @@
+[
+    {
+        "model": "articles.article",
+        "pk": 1,
+        "fields": {
+            "title": "Alpha Article",
+            "description": "Description de l'article Alpha.",
+            "image": "http://example.com/image1.jpg",
+            "user": 1,
+            "created_at": "2025-10-23T10:00:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 2,
+        "fields": {
+            "title": "Bravo Article",
+            "description": "Description de l'article Bravo.",
+            "image": "http://example.com/image2.jpg",
+            "user": 2,
+            "created_at": "2025-10-23T10:05:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 3,
+        "fields": {
+            "title": "Charlie Article",
+            "description": "Description de l'article Charlie.",
+            "image": "http://example.com/image3.jpg",
+            "user": 3,
+            "created_at": "2025-10-23T10:10:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 4,
+        "fields": {
+            "title": "Delta Article",
+            "description": "Description de l'article Delta.",
+            "image": "http://example.com/image4.jpg",
+            "user": 4,
+            "created_at": "2025-10-23T10:15:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 5,
+        "fields": {
+            "title": "Echo Article",
+            "description": "Description de l'article Echo.",
+            "image": "http://example.com/image5.jpg",
+            "user": 5,
+            "created_at": "2025-10-23T10:20:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 6,
+        "fields": {
+            "title": "Foxtrot Article",
+            "description": "Description de l'article Foxtrot.",
+            "image": "http://example.com/image6.jpg",
+            "user": 1,
+            "created_at": "2025-10-23T10:25:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 7,
+        "fields": {
+            "title": "Golf Article",
+            "description": "Description de l'article Golf.",
+            "image": "http://example.com/image7.jpg",
+            "user": 2,
+            "created_at": "2025-10-23T10:30:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 8,
+        "fields": {
+            "title": "Hotel Article",
+            "description": "Description de l'article Hotel.",
+            "image": "http://example.com/image8.jpg",
+            "user": 3,
+            "created_at": "2025-10-23T10:35:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 9,
+        "fields": {
+            "title": "India Article",
+            "description": "Description de l'article India.",
+            "image": "http://example.com/image9.jpg",
+            "user": 4,
+            "created_at": "2025-10-23T10:40:00Z"
+        }
+    },
+    {
+        "model": "articles.article",
+        "pk": 10,
+        "fields": {
+            "title": "Juliet Article",
+            "description": "Description de l'article Juliet.",
+            "image": "http://example.com/image10.jpg",
+            "user": 5,
+            "created_at": "2025-10-23T10:45:00Z"
+        }
+    }
+]
