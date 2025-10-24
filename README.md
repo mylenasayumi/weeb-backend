@@ -60,7 +60,9 @@ git lfs pull
    MYSQL_USER=weeb_user
    MYSQL_PASSWORD=your_secure_password
    MYSQL_ROOT_PASSWORD=your_root_password
-   DATA_PATH=./data/
+   DATA_PATH= If you do not want to move everything use => "./data/"
+   DEBUG=True => for dev False => for prod
+   SECRET_KEY=YOUR_SECRET_DJANGO_KEY
    ```
 
 4. **Build and start services**
