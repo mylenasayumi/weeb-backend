@@ -21,12 +21,12 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from users.views import UserViewSet
-from satisfactions.views import SatisfactionAPIView
+from satisfactions.views import SatisfactionViewSet
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet, basename="users")
 router.register(r"articles", ArticleViewSet, basename="articles")
-router.register(r"satisfactions", SatisfactionAPIView, basename="satisfactions")
+router.register(r"satisfactions", SatisfactionViewSet, basename="satisfactions")
 
 urlpatterns = [
     # Admin

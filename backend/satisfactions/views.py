@@ -1,11 +1,11 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework import viewsets
 
 from .models import Satisfaction
 from .serializers import SatisfactionSerializer
 
-class SatisfactionAPIView(APIView):
+class SatisfactionViewSet(viewsets.ModelViewSet):
     """
     ViewSet to save a satisfaction comment in the database.
     Handle CRUD operations on Satisfactions : list / retrieve / create / update / partial_update / destroy
