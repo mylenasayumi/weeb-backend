@@ -4,8 +4,7 @@ from django.contrib.auth.backends import ModelBackend
 
 class EmailBackend(ModelBackend):
     """
-    Custom authentication backend that allows users to log in using their eiamil address.
-
+    Custom authentication backend that allows users to log in using their email address.
     """
 
     def authenticate(self, request, username=None, password=None, **kwargs):
