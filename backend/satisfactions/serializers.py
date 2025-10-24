@@ -1,7 +1,9 @@
-from rest_framework import serializers
-from langdetect import detect
-import joblib
 import os
+
+import joblib
+from langdetect import detect
+from rest_framework import serializers
+
 from .models import Satisfaction
 
 
@@ -14,7 +16,10 @@ class SatisfactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Satisfaction
         fields = ["email", "last_name", "first_name", "description", "polarity", "user"]
-        extra_kwargs = {"user": {"read_only": True}, "polarity": {"read_only": True},}
+        extra_kwargs = {
+            "user": {"read_only": True},
+            "polarity": {"read_only": True},
+        }
 
     def validate_email(self, value):
         """
@@ -39,12 +44,12 @@ class SatisfactionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-            Checks if satisfaction comment is written in french or english.
-            and add polarity to guess if it is positive or negative
-            Otherwise raise an error.
+        Checks if satisfaction comment is written in french or english.
+        and add polarity to guess if it is positive or negative
+        Otherwise raise an error.
         """
-        lang_available = ['fr', 'en']
-        msg = data['description']
+        lang_available = ["fr", "en"]
+        msg = data["description"]
 
         lang_detected = detect(msg)
 
@@ -52,26 +57,26 @@ class SatisfactionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Input of satisfaction commentary should be written in French or English"
             )
-        
+
         data_path = os.getenv("DATA_PATH")
 
-        if lang_detected == 'fr':
+        if lang_detected == "fr":
             if not os.path.isfile(data_path + "model_ia_fr.pkl"):
                 raise serializers.ValidationError(
                     "Sorry we can not know if your comment is positive or negative."
                 )
-    
+
             model = joblib.load(data_path + "./model_ia_fr.pkl")
 
-        if lang_detected == 'en':
+        if lang_detected == "en":
             if not os.path.isfile(data_path + "./model_ia_en.pkl"):
                 raise serializers.ValidationError(
                     "Sorry we can not know if your comment is positive or negative."
                 )
-        
+
             model = joblib.load(data_path + "./model_ia_en.pkl")
 
         prediction = model.predict([msg.lower()])
 
-        data['polarity'] = True if prediction[0] == 1 else False
-        return data 
+        data["polarity"] = True if prediction[0] == 1 else False
+        return data

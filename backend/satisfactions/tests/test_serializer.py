@@ -2,6 +2,7 @@ from django.test import TestCase
 from rest_framework.exceptions import ValidationError
 from satisfactions.serializers import SatisfactionSerializer
 
+
 class SatisfactionSerializerTest(TestCase):
     def test_validate_email_empty_failure(self):
         serializer = SatisfactionSerializer(data={})
@@ -12,7 +13,7 @@ class SatisfactionSerializerTest(TestCase):
         serializer = SatisfactionSerializer(data={})
         result = serializer.validate_email("test@example.com")
         self.assertEqual(result, "test@example.com")
-    
+
     def test_validate_description_empty_failure(self):
         serializer = SatisfactionSerializer(data={})
         with self.assertRaises(ValidationError):
@@ -26,4 +27,4 @@ class SatisfactionSerializerTest(TestCase):
     def test_validate_bad_language(self):
         serializer = SatisfactionSerializer(data={})
         with self.assertRaises(ValidationError):
-            serializer.validate({'description': 'ich spreche deutch'})
+            serializer.validate({"description": "ich spreche deutch"})
