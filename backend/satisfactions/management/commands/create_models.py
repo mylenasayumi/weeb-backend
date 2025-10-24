@@ -40,18 +40,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # All files must be in this folder
-        folder_path = os.getenv("FOLDER_PATH")
+        data_path = os.getenv("DATA_PATH")
 
-        if not os.path.isfile(folder_path + "dataframe_en.csv") and not os.path.isfile(
-            folder_path + "dataframe_fr.csv"
+        if not os.path.isfile(data_path + "dataframe_en.csv") and not os.path.isfile(
+            data_path + "dataframe_fr.csv"
         ):
             print_color(f"Dataframes are not present, you need to create them", "red")
             return
 
-        if not os.path.isfile("model_ia_fr.pkl"):
+        if not os.path.isfile(data_path + "model_ia_fr.pkl"):
             # First: French reviews.
             print_color(f"Loading French DF...", "yellow")
-            df_fr = pd.read_csv(folder_path + "dataframe_fr.csv")
+            df_fr = pd.read_csv(data_path + "dataframe_fr.csv")
 
             # clear french reviews
             print_color(f"Clearing french reviews...", "yellow")
@@ -100,7 +100,7 @@ class Command(BaseCommand):
             score = grid_search_tune.score(X_test, y_test)
             print_color(f"\n\tAccuracy sur le test : {score:.4f}", "blue")
 
-            joblib.dump(grid_search_tune.best_estimator_, "model_ia_fr.pkl")
+            joblib.dump(grid_search_tune.best_estimator_, data_path + "model_ia_fr.pkl")
 
             print_color(
                 f"\nSaving best trained french model model_ia_fr.pkl in {time.time() - START_TIME:.2f} sec",
@@ -108,10 +108,10 @@ class Command(BaseCommand):
             )
             time.sleep(2)
 
-        if not os.path.isfile("model_ia_en.pkl"):
+        if not os.path.isfile(data_path + "model_ia_en.pkl"):
             # SECOND: English Reviews
             print_color(f"Loading English DF...", "yellow")
-            df_en = pd.read_csv(folder_path + "dataframe_en.csv")
+            df_en = pd.read_csv(data_path + "dataframe_en.csv")
 
             # clear enflgish reviews
             print_color(f"clearing english reviews...", "yellow")
@@ -160,7 +160,7 @@ class Command(BaseCommand):
             score = grid_search_tune.score(X_test, y_test)
             print_color(f"\n\tAccuracy sur le test : {score:.4f}", "blue")
 
-            joblib.dump(grid_search_tune.best_estimator_, "model_ia_en.pkl")
+            joblib.dump(grid_search_tune.best_estimator_, data_path + "model_ia_en.pkl")
 
             print_color(
                 f"\nSaving best trained English model model_ia_en.pkl in {time.time() - START_TIME:.2f} sec",

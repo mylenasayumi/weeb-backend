@@ -67,12 +67,12 @@ def get_translations(data, src_lang, dest_lang):
     return translations
 
 
-def check_files_not_exists(list_files, path):
+def check_files_not_exists(list_files, path, start_time):
     """
     if all files exist return false
     Otherwise use custom_exist to exist
     """
     for file in list_files:
         if not os.path.isfile(path + file):
-            exit_with_error(f"Missing a file: {path + file}")
+            exit_with_error(f"Missing a file: {path + file}", start_time)
     return False
