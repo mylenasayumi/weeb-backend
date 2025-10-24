@@ -30,8 +30,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        if self.action == "create":
-            return [permissions.AllowAny()]
+        if self.action == "me":
+            return [permissions.IsAuthenticated()]
         elif self.action in ["partial_update", "update", "destroy"]:
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
         return [permissions.AllowAny()]
@@ -41,9 +41,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserCreateSerializer
         return UserSerializer
 
-    @action(
-        detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated]
-    )
+    @action(detail=False, methods=["get"])
     def me(self, request):
         """
         GET /api/users/me
