@@ -31,7 +31,6 @@ ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -142,11 +141,10 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
-    # Pagination et filtres existants
+    # Pagination and filter
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 5,
@@ -158,18 +156,16 @@ REST_FRAMEWORK = {
     ),
 }
 
-
 # Override the default user model by using our model
 AUTH_USER_MODEL = "users.EmailUser"
 
+# Using our custom EmailBackend for auth
 AUTHENTICATION_BACKENDS = ["users.backend.EmailBackend"]
 
+# Customized token
 SIMPLE_JWT = {
-    # Champ du modèle User à utiliser dans le token
     "USER_ID_FIELD": "email",
-    # Nom de la clé dans le token
     "USER_ID_CLAIM": "user_email",
-    # Autres options si besoin
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
