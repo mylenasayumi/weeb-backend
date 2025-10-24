@@ -1,7 +1,8 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 
 User = get_user_model()
+
 
 class UsersModelTest(TestCase):
     def setUp(self):
@@ -17,5 +18,7 @@ class UsersModelTest(TestCase):
         Test __str__ method returns correct string.
         """
         expected_output = self.user.__str__()
-        self.assertTrue(expected_output.startswith("User email: john@example.com, created at: "))
+        self.assertTrue(
+            expected_output.startswith("User email: john@example.com, created at: ")
+        )
         self.assertIn("john@example.com", expected_output)

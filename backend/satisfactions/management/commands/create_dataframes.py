@@ -230,9 +230,7 @@ class Command(BaseCommand):
             print_color(f"\tClearing file: {file}")
 
             if file == "allocine_french_review.csv":
-                df_allocine_fr, df_allocine_en = clean_allocine_reviews(
-                    csv_path + file
-                )
+                df_allocine_fr, df_allocine_en = clean_allocine_reviews(csv_path + file)
 
                 dataframe_fr.append(df_allocine_fr)
                 dataframe_en.append(df_allocine_en)

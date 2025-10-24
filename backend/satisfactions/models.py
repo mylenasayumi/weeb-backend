@@ -4,6 +4,7 @@ from django.utils import timezone
 
 User = get_user_model()
 
+
 class Satisfaction(models.Model):
     """
     Model to represent a satisfaction form sent by user.

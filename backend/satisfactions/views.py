@@ -1,9 +1,9 @@
-from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Satisfaction
 from .serializers import SatisfactionSerializer
+
 
 class SatisfactionView(CreateAPIView):
     """
@@ -13,7 +13,8 @@ class SatisfactionView(CreateAPIView):
 
     queryset = Satisfaction.objects.all()
     serializer_class = SatisfactionSerializer
-    
+    permission_classes = [IsAuthenticated]
+
     def perform_create(self, serializer):
         """
         Associate the current authentified user
