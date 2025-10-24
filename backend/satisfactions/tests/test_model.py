@@ -28,4 +28,4 @@ class SatisfactionsModelTest(TestCase):
         Test __str__ method returns correct string
         """
         expected_output = f"Satisfaction Form: {self.satisfaction.first_name} {self.satisfaction.last_name} sent a satisfaction comment on {self.satisfaction.created_at}."
-        self.assertEqual(self.satisfaction.__str__(), expected_output)
+        self.assertEqual(str(self.satisfaction), expected_output)
