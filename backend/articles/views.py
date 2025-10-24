@@ -39,6 +39,6 @@ class ArticleViewSet(viewsets.ModelViewSet):
             list / retrieve for everyone
             update / create / destroy for authenticated and owner OR admin
         """
-        if self.action in ["list", "retrieve"]:
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+        if self.action in ["create", "destroy", "update", "partial_update"]:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
