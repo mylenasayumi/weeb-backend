@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import permissions, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 
 from .models import Article
@@ -32,3 +32,13 @@ class ArticleViewSet(viewsets.ModelViewSet):
         Associate the current authentified user
         """
         serializer.save(user=self.request.user)
+
+    def get_permissions(self):
+        """
+        Set permissions :
+            list / retrieve for everyone
+            update / create / destroy for authenticated and owner OR admin
+        """
+        if self.action in ["list", "retrieve"]:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
