@@ -96,9 +96,6 @@ class UsersAPITests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(res.json(), expected_output)
 
-    def test_jwt_login_bad_method(self):
-        pass
-
     def test_get_tokens_success(self):
         """
         Test successful, response should have access and refresh
