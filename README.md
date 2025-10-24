@@ -1,111 +1,227 @@
 # Weeb Backend
 
-*Readme in progress...*
+A Django REST API backend with machine learning capabilities, providing user management, article handling, and satisfaction tracking.
 
-coverage
-![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mylenasayumi/weeb-backend)
 
-# GIT LFS
+
+## 🛠 Tech Stack
+
+- **Framework**: Django with Django REST Framework
+- **Database**: MySQL
+- **Containerization**: Docker & Docker Compose
+- **ML Libraries**: Integrated machine learning tools
+- **CORS**: Django CORS Headers for cross-origin requests
+- **Version Control**: Git with Git LFS for large files
+
+## 📦 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- [Docker](https://docs.docker.com/get-docker/) (20.10+)
+- [Docker Compose](https://docs.docker.com/compose/install/) (2.0+)
+- [Git](https://git-scm.com/downloads)
+- [Git LFS](https://git-lfs.github.com/)
+
+### Git LFS Setup
+
+```bash
+# Install Git LFS
 sudo apt install git-lfs
 
+# Initialize Git LFS
 git lfs install
 
+# Pull LFS files
 git lfs pull
-
-### Fixtures
-When starting the project 5 users and 10 articles are generated and put in the database.
-1 admin user => mdp = admin
-other user => mdp = Password12345@
-
-
-# Folder used to save csv files ==> use data/
-DATA_PATH="./data/"
-
-## INSTALLATION
-1. Clone the repo.
-```bash
-    git clone https://github.com/mylenasayumi/weeb-backend.git <NAME_FOLDER>
 ```
 
-2. Go to your new folder
+## 🚀 Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/mylenasayumi/weeb-backend.git weeb-backend
+   cd weeb-backend
+   ```
+
+2. **Verify Docker Compose installation**
+   ```bash
+   docker compose version
+   ```
+   If not installed, follow the [official documentation](https://docs.docker.com/compose/install/).
+
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` with your preferred settings:
+   ```env
+   MYSQL_DATABASE=weeb_database
+   MYSQL_USER=weeb_user
+   MYSQL_PASSWORD=your_secure_password
+   MYSQL_ROOT_PASSWORD=your_root_password
+   DATA_PATH=./data/
+   ```
+
+4. **Build and start services**
+   ```bash
+   docker compose build
+   docker compose up
+   ```
+
+5. **Access the application**
+   - API: `http://localhost:8000`
+   - Wait for all services to complete initialization
+
+## ⚙️ Configuration
+
+### Default Fixtures
+
+On first startup, the application automatically creates:
+- **5 test users**
+  - 1 Admin user: `username: admin` | `password: admin`
+  - 4 Regular users: `password: Password12345@`
+- **10 sample articles**
+
+### Data Storage
+
+CSV files are stored in the directory specified by `DATA_PATH` in your `.env` file (default: `./data/`).
+
+## 🎯 Usage
+
+### Clean Dataframes and create new one
+
 ```bash
-    cd <NAME_FOLDER>
+docker compose exec api python manage.py create_dataframes
 ```
 
-3. Check docker compose installation
-```bash
-    docker compose version
-```
-    If no installation go to:  https://docs.docker.com/compose/install/
+### Create models
 
-4. Copy .env.example to .env
 ```bash
-    cp .env.example .env
+docker compose exec api python manage.py create_models
 ```
 
-5. Change variables in .env
+### Try it?
+
 ```bash
-    example: MYSQL_DATABASE="My-awesome-database" ...
+docker compose exec api python manage.py try_models
 ```
 
-6. Start services with Docker Compose
+
+### Run Management Commands
+
 ```bash
-    docker compose build && docker compose up
+docker compose exec api python manage.py <command>
 ```
 
-7. Wait until everything is completed and enjoy.
+## 🧪 Testing
 
-## Use coverage
-1. Run this command
+### Run Tests
+
 ```bash
-    docker compose exec api coverage run manage.py test
+docker compose exec api coverage run manage.py test
 ```
 
-2. Need a report?
+### Generate Coverage Report
+
+**Terminal output:**
 ```bash
-    docker compose exec api coverage report
-
-    or
-
-    docker compose exec api coverage html
-
+docker compose exec api coverage report
 ```
 
-docker compose exec api python manage.py create_ia
+**HTML report:**
+```bash
+docker compose exec api coverage html
+```
+The HTML report will be available in the `htmlcov/` directory.
 
+## 👨‍💻 Development Workflow
 
-###
-precommit
+### Pre-commit Hooks
+
+Install and run pre-commit hooks to ensure code quality:
+
+```bash
+# Install hooks
 pre-commit install
+
+# Run on all files
 pre-commit run --all-files
+```
 
-## Technologies
-    -   Docker Compose
-    -   Mysql
-    -   Django
-    -   Django Rest Framework
-    -   Django Cors Headers
-    -   Librairies Machine Learning
+### Git Workflow
 
-## Rules to follow
-    1. Create Issue
-        Add description + image or link if need to
-    
-    2. PR must start by fix/feat/delete
-        must follow path of app 
-            fix/user/
-        must follow the file
-            fix/user/views
-        must follow the function if needed it
-            fix/user/views/helloWorld
-    
-    3. Every PR should be approuved
+1. **Create an Issue**
+   - Add a clear description
+   - Include images or links if necessary
+   - Use appropriate labels
 
-    4. Always add test to PR
+2. **Branch Naming Convention**
+   ```
+   <type>/<app>/<module>/<function>
+   ```
+   
+   **Examples:**
+   - `fix/user/views/helloWorld`
+   - `feat/articles/serializers`
+   - `delete/satisfactions/models`
+   
+   **Types:**
+   - `fix`: Bug fixes
+   - `feat`: New features
+   - `delete`: Removing code/features
+   - `refactor`: Code refactoring
+   - `docs`: Documentation updates
 
-## Structure
-    3 apps
-        1. users
-        2. articles
-        3. satisfactions
-        
+3. **Pull Request Guidelines**
+   - Link related issue(s)
+   - Provide clear description of changes
+   - Include tests for new features/fixes
+   - Ensure all tests pass
+   - Require approval before merging
+
+## 📁 Backend Project Structure
+
+```
+weeb-backend/
+├── users/              # User management app
+│   ├── models.py
+│   ├── views.py
+│   ├── serializers.py
+│   └── tests.py
+├── articles/           # Article management app
+│   ├── models.py
+│   ├── views.py
+│   ├── serializers.py
+│   └── tests.py
+├── satisfactions/      # Satisfaction tracking app
+│   ├── models.py
+│   ├── views.py
+│   ├── serializers.py
+│   └── tests.py
+├── data/               # CSV storage directory
+├── manage.py
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+└── .env.example
+```
+
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow the development workflow outlined above.
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to your branch
+5. Open a Pull Request
+
+## 📧 Contact
+
+For questions or support, please open an issue on GitHub.
+
+---
+
+**Note**: Remember to keep your `.env` file secure and never commit it to version control.
