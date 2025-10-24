@@ -30,14 +30,15 @@ class Command(BaseCommand):
     help = "Test the AI satisfaction classification model."
 
     def handle(self, *args, **options):
-        # All files must be in this folder
+        # All models must be in this folder
+        data_path = os.getenv("DATA_PATH")
 
         is_fr_model = True
         is_en_model = True
 
-        if not os.path.isfile("model_ia_fr.pkl"):
+        if not os.path.isfile(data_path + "model_ia_fr.pkl"):
             is_fr_model = False
-        if not os.path.isfile("model_ia_en.pkl"):
+        if not os.path.isfile(data_path + "model_ia_en.pkl"):
             is_en_model = False
 
         if is_fr_model and is_en_model:
@@ -57,10 +58,10 @@ class Command(BaseCommand):
             return
 
         if lang == "fr":
-            model_charge = joblib.load("./model_ia_fr.pkl")
+            model_charge = joblib.load(data_path + "./model_ia_fr.pkl")
 
         if lang == "en":
-            model_charge = joblib.load("./model_ia_en.pkl")
+            model_charge = joblib.load(data_path + "./model_ia_en.pkl")
         print_color(
             f"\tLoaded model '{lang}' successfully! Type 'exit' to quit.", "green"
         )

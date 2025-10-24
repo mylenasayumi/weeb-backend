@@ -210,11 +210,11 @@ class Command(BaseCommand):
     help = "This command checks csv files and clear all datas"
 
     def handle(self, *args, **options):
-        # All files must be in this folder
-        folder_path = os.getenv("FOLDER_PATH")
+        # All CSV files must be in this folder
+        csv_path = os.getenv("DATA_PATH")
 
-        if os.path.isfile(folder_path + "dataframe_en.csv") and os.path.isfile(
-            folder_path + "dataframe_fr.csv"
+        if os.path.isfile(csv_path + "dataframe_en.csv") and os.path.isfile(
+            csv_path + "dataframe_fr.csv"
         ):
             print_color(f"All dataframes are here, no need to create", "green")
             return
@@ -222,7 +222,7 @@ class Command(BaseCommand):
         print_color(f"Starting Clear Csv Files...", "yellow")
 
         # checks if all files exists
-        check_files_not_exists(DATA_FILES, folder_path)
+        check_files_not_exists(DATA_FILES, csv_path, START_TIME)
 
         dataframe_fr = []
         dataframe_en = []
@@ -231,7 +231,7 @@ class Command(BaseCommand):
 
             if file == "allocine_french_review.csv":
                 df_allocine_fr, df_allocine_en = clean_allocine_reviews(
-                    folder_path + file
+                    csv_path + file
                 )
 
                 dataframe_fr.append(df_allocine_fr)
@@ -242,7 +242,7 @@ class Command(BaseCommand):
                 )
 
             if file == "amazon_fr_en_review.csv":
-                df_amazon_fr, df_amazon_en = clean_amazon_reviews(folder_path + file)
+                df_amazon_fr, df_amazon_en = clean_amazon_reviews(csv_path + file)
 
                 dataframe_fr.append(df_amazon_fr)
                 dataframe_en.append(df_amazon_en)
@@ -252,7 +252,7 @@ class Command(BaseCommand):
                 )
 
             if file == "french_tweets.csv":
-                df_tweet_fr, df_tweet_en = clean_tweeter_reviews(folder_path + file)
+                df_tweet_fr, df_tweet_en = clean_tweeter_reviews(csv_path + file)
 
                 dataframe_fr.append(df_tweet_fr)
                 dataframe_en.append(df_tweet_en)
@@ -264,10 +264,10 @@ class Command(BaseCommand):
             ia_files = ["chatgpt", "claude", "lechat"]
             if any(elem in file for elem in ia_files):
                 if "fr" in file:
-                    df_chat_fr = clean_ai_reviews(folder_path + file)
+                    df_chat_fr = clean_ai_reviews(csv_path + file)
                     dataframe_fr.append(df_chat_fr)
                 else:
-                    df_chat_en = clean_ai_reviews(folder_path + file)
+                    df_chat_en = clean_ai_reviews(csv_path + file)
                     dataframe_en.append(df_chat_en)
                 print_color(
                     f"End of ia reviews after: {time.time() - START_TIME:.2f} sec",
@@ -286,8 +286,8 @@ class Command(BaseCommand):
             "yellow",
         )
 
-        df_final_fr.to_csv(folder_path + "dataframe_fr.csv", sep=",", index=False)
-        df_final_en.to_csv(folder_path + "dataframe_en.csv", sep=",", index=False)
+        df_final_fr.to_csv(csv_path + "dataframe_fr.csv", sep=",", index=False)
+        df_final_en.to_csv(csv_path + "dataframe_en.csv", sep=",", index=False)
 
         print_color(
             f"\nCreate 2 files: 'dataframe_fr.csv' and 'dataframe_en.csv' in {time.time() - START_TIME:.2f} sec",
