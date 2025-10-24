@@ -3,7 +3,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .serializer import UserCreateSerializer, UserSerializer
+from .serializers import UserCreateSerializer, UserSerializer
 
 User = get_user_model()
 
