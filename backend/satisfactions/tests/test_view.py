@@ -1,10 +1,12 @@
-from unittest.mock import patch
+import os
 import unittest
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase
 from satisfactions.models import Satisfaction
-import os
+
 User = get_user_model()
 from rest_framework import status
 
@@ -36,7 +38,9 @@ class SatisfactionsViewTests(APITestCase):
         self.detail_url = lambda pk: reverse("satisfactions-detail", args=[pk])
 
     ############ CREATE ############
-    @unittest.skipIf(os.getenv("CI") == "true", "Skip test because no pkl files are pushed")
+    @unittest.skipIf(
+        os.getenv("CI") == "true", "Skip test because no pkl files are pushed"
+    )
     @patch("satisfactions.serializers.detect", return_value="fr")
     def test_create_satisfaction_fr_success(self, mock_detect):
         """
@@ -54,7 +58,9 @@ class SatisfactionsViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Satisfaction.objects.count(), 2)
 
-    @unittest.skipIf(os.getenv("CI") == "true", "Skip test because no pkl files are pushed")
+    @unittest.skipIf(
+        os.getenv("CI") == "true", "Skip test because no pkl files are pushed"
+    )
     @patch("satisfactions.serializers.detect", return_value="en")
     def test_create_satisfaction_en_success(self, mock_detect):
         """
@@ -72,7 +78,9 @@ class SatisfactionsViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Satisfaction.objects.count(), 2)
 
-    @unittest.skipIf(os.getenv("CI") == "true", "Skip test because no pkl files are pushed")
+    @unittest.skipIf(
+        os.getenv("CI") == "true", "Skip test because no pkl files are pushed"
+    )
     @patch("satisfactions.serializers.detect", return_value="fr")
     @patch("satisfactions.serializers.os.path.isfile", return_value=False)
     def test_create_satisfaction_missing_model_fr_failure(
@@ -95,7 +103,9 @@ class SatisfactionsViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Sorry we can not know", str(response.data))
 
-    @unittest.skipIf(os.getenv("CI") == "true", "Skip test because no pkl files are pushed")
+    @unittest.skipIf(
+        os.getenv("CI") == "true", "Skip test because no pkl files are pushed"
+    )
     @patch("satisfactions.serializers.detect", return_value="en")
     @patch("satisfactions.serializers.os.path.isfile", return_value=False)
     def test_create_satisfaction_missing_model_en_failure(
