@@ -12,6 +12,10 @@ git lfs install
 
 git lfs pull
 
+### Fixtures
+When starting the project 5 users and 10 articles are generated and put in the database.
+1 admin user => mdp = admin
+other user => mdp = Password12345@
 
 
 ## INSTALLATION
