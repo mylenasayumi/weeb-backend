@@ -7,8 +7,7 @@ from .serializers import SatisfactionSerializer
 
 class SatisfactionView(CreateAPIView):
     """
-    View to save a satisfaction comment in the database.
-    Handle CRUD operations on Satisfactions : list / retrieve / create / update / partial_update / destroy
+    View to save a satisfaction comment in the database (only POST method).
     """
 
     queryset = Satisfaction.objects.all()
