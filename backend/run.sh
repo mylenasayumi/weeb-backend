@@ -4,11 +4,11 @@
 sed -i 's/\r$//' "$0" 2>/dev/null || true
 
 # Wait database
-echo "Waiting for database..."
-while ! nc -z db 3306; do
-  sleep 1 # wait 1 second before checking again
-done
-echo "Database is ready!"
+# echo "Waiting for database..."
+# while ! nc -z db 3306; do
+#   sleep 1 # wait 1 second before checking again
+# done
+# echo "Database is ready!"
 
 # Create migrations
 python manage.py makemigrations
