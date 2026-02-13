@@ -13,8 +13,12 @@ sed -i 's/\r$//' "$0" 2>/dev/null || true
 # Create migrations
 python manage.py makemigrations
 
-# Apply migrations
-python manage.py migrate
+# Apply migrations with error handling
+if ! python manage.py migrate; then
+    echo "Migration failed. Resetting database..."
+    rm -f db.sqlite3
+    python manage.py migrate
+fi
 
 # Add fixtures
 python manage.py loaddata users/fixtures/users_fixtures.json || true
