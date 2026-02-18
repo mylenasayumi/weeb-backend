@@ -11,6 +11,7 @@ class EmailUser(AbstractUser):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     created_at = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
