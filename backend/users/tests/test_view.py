@@ -141,6 +141,84 @@ class UsersAPITests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(res.json(), expected_output)
 
+    def test_get_tokens_inactive_user_failure(self):
+        """
+        Test that an inactive user (is_active=False) cannot obtain tokens.
+        Should return an error message and 401 status code.
+        """
+        inactive_user = User.objects.create_user(
+            email="inactive@example.com",
+            password="pass12345",
+            first_name="Inactive",
+            last_name="User",
+            is_active=False,
+        )
+
+        url = reverse("token_obtain_pair")
+        expected_output = {
+            "detail": "User account is not active. Please contact an administrator."
+        }
+
+        res = self.client.post(
+            url, {"email": "inactive@example.com", "password": "pass12345"}
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res.json(), expected_output)
+
+    def test_get_tokens_active_user_success(self):
+        """
+        Test that an active user (is_active=True) can obtain tokens.
+        Verifies that both access and refresh tokens are returned.
+        """
+        self.user.is_active = True
+        self.user.save()
+
+        url = reverse("token_obtain_pair")
+
+        res = self.client.post(
+            url, {"email": "john@example.com", "password": "pass12345"}
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access", res.json())
+        self.assertIn("refresh", res.json())
+        self.assertIsNotNone(res.data["access"])
+        self.assertIsNotNone(res.data["refresh"])
+
+    def test_inactive_user_becomes_active(self):
+        """
+        Test that an initially inactive user can obtain tokens after being activated.
+        """
+        # Create an inactive user
+        user = User.objects.create_user(
+            email="pending@example.com",
+            password="pass12345",
+            first_name="Pending",
+            last_name="User",
+            is_active=False,
+        )
+
+        url = reverse("token_obtain_pair")
+
+        # First attempt: should fail (inactive)
+        res = self.client.post(
+            url, {"email": "pending@example.com", "password": "pass12345"}
+        )
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # Activate the user (simulating admin approval)
+        user.is_active = True
+        user.save()
+
+        # Second attempt: should succeed (now active)
+        res = self.client.post(
+            url, {"email": "pending@example.com", "password": "pass12345"}
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access", res.json())
+        self.assertIn("refresh", res.json())
+
     def test_get_me_url_success(self):
         url = reverse("token_obtain_pair")
         res = self.client.post(

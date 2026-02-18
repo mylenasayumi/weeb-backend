@@ -2,8 +2,13 @@ from django.contrib.auth import get_user_model
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .serializers import UserCreateSerializer, UserSerializer
+from .serializers import (
+    CustomTokenObtainPairSerializer,
+    UserCreateSerializer,
+    UserSerializer,
+)
 
 User = get_user_model()
 
@@ -48,3 +53,14 @@ class UserViewSet(viewsets.ModelViewSet):
         Returns the profil of the current user
         """
         return Response(UserSerializer(request.user).data)
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Custom token obtain pair view that verifies if a user is active.
+
+    If is_active=True, returns access and refresh tokens.
+    If is_active=False, returns an error message.
+    """
+
+    serializer_class = CustomTokenObtainPairSerializer
