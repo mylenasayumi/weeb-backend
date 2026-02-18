@@ -101,6 +101,8 @@ class UsersAPITests(APITestCase):
         Test successful, response should have access and refresh
         """
         url = reverse("token_obtain_pair")
+        self.user.is_active = True
+        self.user.save()
 
         res = self.client.post(
             url, {"email": "john@example.com", "password": "pass12345"}
@@ -142,7 +144,13 @@ class UsersAPITests(APITestCase):
         self.assertEqual(res.json(), expected_output)
 
     def test_get_me_url_success(self):
+        """
+        Test get me endpoint.
+        """
         url = reverse("token_obtain_pair")
+        self.user.is_active = True
+        self.user.save()
+
         res = self.client.post(
             url, {"email": "john@example.com", "password": "pass12345"}
         )
@@ -152,7 +160,6 @@ class UsersAPITests(APITestCase):
         url = reverse("users-me")
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
-        res = self.client.get(url)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["email"], "john@example.com")
