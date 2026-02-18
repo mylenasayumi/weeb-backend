@@ -42,3 +42,14 @@ class ArticleViewSet(viewsets.ModelViewSet):
         if self.action in ["create", "destroy", "update", "partial_update"]:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
+
+    def get_object(self):
+        """
+        Check if user is the owner of article or is admin.
+        """
+        obj = super().get_object()
+        if not self.request.user.is_staff and obj.user != self.request.user:
+            raise permissions.exceptions.PermissionDenied(
+                "You are not authorized to modify this article."
+            )
+        return obj

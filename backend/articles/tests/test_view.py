@@ -159,3 +159,42 @@ class ArticleViewTests(APITestCase):
 
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Article.objects.filter(pk=self.article1.pk).exists())
+
+
+    def test_update_article_not_owner_failure(self):
+        """
+        Should prevent a user from updating an article they do not own.
+        """
+        # Crée un autre utilisateur
+        other_user = User.objects.create_user(
+            email="other@example.com",
+            password="pass12345",
+            first_name="Other",
+            last_name="User",
+        )
+
+        # Crée un article appartenant à other_user
+        # other_article = Article.objects.create(
+        #     title="Article of Other User",
+        #     description="This article belongs to another user.",
+        #     user=other_user,
+        # )
+
+        # Authentifie le client avec self.user (pas le propriétaire)
+        self.client.force_authenticate(user=other_user)
+
+        # Essaie de mettre à jour l'article de other_user
+        data = {
+            "title": "Unauthorized Update Attempt",
+            "description": "This should fail.",
+        }
+        response = self.client.put(
+            self.detail_url(self.article1.pk), data=data, format="json"
+        )
+
+        # Vérifie que la requête échoue avec un 403 Forbidden
+        self.assertEqual(response.status_code, 403)
+        self.assertIn(
+            "You are not authorized to modify this article.",
+            str(response.data["detail"]),
+        )
