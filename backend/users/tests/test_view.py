@@ -162,6 +162,8 @@ class UsersAPITests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        res = self.client.get(url)
+
         self.assertEqual(res.data["email"], "john@example.com")
 
     def test_get_other_user_failure(self):
