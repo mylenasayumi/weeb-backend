@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APIRequestFactory, APITestCase
+from users.models import EmailUser
 from users.views import IsSelf
 
 User = get_user_model()
@@ -100,15 +101,24 @@ class UsersAPITests(APITestCase):
         """
         Test successful, response should have access and refresh
         """
-        url = reverse("token_obtain_pair")
+        user = EmailUser.objects.create_user(
+            email="emma@example.com",
+            password="pass12345",
+            first_name="Emma",
+            last_name="Watson",
+        )
+        user.is_active = True
+        user.save()
 
         res = self.client.post(
-            url, {"email": "john@example.com", "password": "pass12345"}
+            "/api/auth/token/",
+            {"email": "emma@example.com", "password": "pass12345"},
+            format="json",
         )
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertIn("access", res.json())
-        self.assertIn("refresh", res.json())
+        self.assertIn("access", res.data)
+        self.assertIn("refresh", res.data)
 
     def test_get_tokens_bad_email_failure(self):
         url = reverse("token_obtain_pair")
@@ -142,20 +152,31 @@ class UsersAPITests(APITestCase):
         self.assertEqual(res.json(), expected_output)
 
     def test_get_me_url_success(self):
-        url = reverse("token_obtain_pair")
+        """
+        Test get me endpoint.
+        """
+        user = EmailUser.objects.create_user(
+            email="emma@example.com",
+            password="pass12345",
+            first_name="Emma",
+            last_name="Watson",
+        )
+        user.is_active = True
+        user.save()
+
         res = self.client.post(
-            url, {"email": "john@example.com", "password": "pass12345"}
+            "/api/auth/token/",
+            {"email": "emma@example.com", "password": "pass12345"},
+            format="json",
         )
 
         access = res.data["access"]
 
-        url = reverse("users-me")
-
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
-        res = self.client.get(url)
+        res = self.client.get("/api/users/me/", format="json")
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data["email"], "john@example.com")
+        self.assertEqual(res.data["email"], "emma@example.com")
 
     def test_get_other_user_failure(self):
         """
