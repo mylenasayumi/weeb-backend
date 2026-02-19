@@ -3,7 +3,7 @@ services:
     container_name: weeb-back
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     env_file:
       - .env
     ports:
