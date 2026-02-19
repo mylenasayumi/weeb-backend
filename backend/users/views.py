@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
@@ -5,8 +7,9 @@ from rest_framework.response import Response
 
 from .serializers import UserCreateSerializer, UserSerializer
 
-User = get_user_model()
 
+User = get_user_model()
+logger = logging.getLogger("users")
 
 class IsSelf(permissions.BasePermission):
     """
@@ -48,3 +51,16 @@ class UserViewSet(viewsets.ModelViewSet):
         Returns the profil of the current user
         """
         return Response(UserSerializer(request.user).data)
+
+    def create(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        ip = request.META.get("REMOTE_ADDR")
+
+        try:
+            response = super().create(request, *args, **kwargs)
+            logger.info(f"User created: email={email} from ip={ip}")
+        except:
+            logger.warning(f"Failed user created for email={email} from ip={ip}")
+            raise
+
+        return response
