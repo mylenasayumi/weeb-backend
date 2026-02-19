@@ -1,11 +1,13 @@
-from articles.models import Article
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.urls import reverse
+
 from rest_framework.test import APIClient, APITestCase
 
-User = get_user_model()
+from articles.models import Article
 
+
+User = get_user_model()
 
 class ArticleViewTests(APITestCase):
     """
@@ -150,6 +152,23 @@ class ArticleViewTests(APITestCase):
         self.article1.refresh_from_db()
         self.assertEqual(self.article1.title, "New Title")
 
+    ############ PARTIAL UPDATE ############
+    def test_partial_update_article_success(self):
+        """
+        Should partial uppdate an existing article.
+        """
+        data = {
+            "description": "Updated description Partial Update",
+        }
+        response = self.client.patch(
+            self.detail_url(self.article1.pk), data=data, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.article1.refresh_from_db()
+        self.assertNotEqual(self.article1.title, data["description"])
+
+
     ############ DELETE ############
     def test_delete_article_success(self):
         """
@@ -165,7 +184,11 @@ class ArticleViewTests(APITestCase):
         """
         Should prevent a user from updating an article they do not own.
         """
-        # Crée un autre utilisateur
+        data = {
+            "title": "Unauthorized Update Attempt",
+            "description": "This should fail.",
+        }
+
         other_user = User.objects.create_user(
             email="other@example.com",
             password="pass12345",
@@ -173,26 +196,12 @@ class ArticleViewTests(APITestCase):
             last_name="User",
         )
 
-        # Crée un article appartenant à other_user
-        # other_article = Article.objects.create(
-        #     title="Article of Other User",
-        #     description="This article belongs to another user.",
-        #     user=other_user,
-        # )
-
-        # Authentifie le client avec self.user (pas le propriétaire)
         self.client.force_authenticate(user=other_user)
 
-        # Essaie de mettre à jour l'article de other_user
-        data = {
-            "title": "Unauthorized Update Attempt",
-            "description": "This should fail.",
-        }
         response = self.client.put(
             self.detail_url(self.article1.pk), data=data, format="json"
         )
 
-        # Vérifie que la requête échoue avec un 403 Forbidden
         self.assertEqual(response.status_code, 403)
         self.assertIn(
             "You are not authorized to modify this article.",

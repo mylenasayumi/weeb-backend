@@ -169,3 +169,40 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
+
+# Logging
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "dev": {
+            "format": "[WEEB-BACKEND - {levelname}] {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "dev",
+        },
+    },
+    "loggers": {
+        "auth": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+    },
+    "loggers": {
+        "users": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+    },
+    "loggers": {
+        "articles": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+    },
+}

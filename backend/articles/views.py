@@ -1,3 +1,5 @@
+import logging
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -5,6 +7,8 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from .models import Article
 from .serializers import ArticleSerializer
 
+
+logger = logging.getLogger("articles")
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """
@@ -53,3 +57,23 @@ class ArticleViewSet(viewsets.ModelViewSet):
                 "You are not authorized to modify this article."
             )
         return obj
+
+    def update(self, request, *args, **kwargs):
+        article = self.get_object()
+        ip = request.META.get("REMOTE_ADDR")
+        email = request.user.email
+
+        response = super().update(request, *args, **kwargs)
+        logger.info(f"Article updated: id={article.id} by email={email} from ip={ip}")
+
+        return response
+
+    def partial_update(self, request, *args, **kwargs):
+        article = self.get_object()
+        ip = request.META.get("REMOTE_ADDR")
+        email = request.user.email
+
+        response = super().partial_update(request, *args, **kwargs)
+        logger.info(f"Article partially updated: id={article.id} by email={email} from ip={ip}")
+
+        return response
