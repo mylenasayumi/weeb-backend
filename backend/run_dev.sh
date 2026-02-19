@@ -1,15 +1,26 @@
-## PROD ONLY
+#!/usr/bin/env bash
 
-# Create migrations && Apply migrations
+# Delete \r for Windows error vs Linux
+sed -i 's/\r$//' "$0" 2>/dev/null || true
+
+# Wait database
+echo "Waiting for database..."
+while ! nc -z db 3306; do
+  sleep 1 # wait 1 second before checking again
+done
+echo "Database is ready!"
+
+# Create migrations
 python manage.py makemigrations
+
+# Apply migrations
 python manage.py migrate
 
 # Load fixtures
 python manage.py loaddata users/fixtures/users_fixtures.json || true
 python manage.py loaddata articles/fixtures/articles_fixtures.json || true
 
-
-### Checking if dataframes are missing
+# Checking if dataframes are missing
 missing_dataframes=()
 
 # English file
@@ -29,8 +40,7 @@ else
     python -u manage.py create_dataframes
 fi
 
-
-### Checking if models are missing
+# Checking if models are missing
 models_dataframes=()
 
 # English file
@@ -50,7 +60,6 @@ else
     python -u manage.py create_models
 fi
 
-# Start server -- STIL TESTING
-echo "Starting Gunicorn..."
-exec gunicorn backend.wsgi:application -bind 0.0.0.0:10000
-# exec gunicorn backend:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} --workers 4 --timeout 120
+
+# Start server
+python manage.py runserver 0.0.0.0:8000
