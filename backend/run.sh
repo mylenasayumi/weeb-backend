@@ -52,5 +52,5 @@ fi
 
 # Start server -- STIL TESTING
 echo "Starting Gunicorn..."
-exec gunicorn backend.wsgi:application -bind 0.0.0.0:10000
+exec gunicorn backend.wsgi:application -b 0.0.0.0:10000
 # exec gunicorn backend:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} --workers 4 --timeout 120
