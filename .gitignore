@@ -46,4 +46,4 @@ coverage.xml
 *.py,cover
 
 # IA
-*.pkl
+# *.pkl
