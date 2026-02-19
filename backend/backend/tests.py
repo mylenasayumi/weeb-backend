@@ -24,6 +24,6 @@ class SettingsCoverageTest(SimpleTestCase):
         assert settings.TIME_ZONE == "UTC"
         assert settings.STATIC_URL == "/static/"
         assert settings.DEFAULT_AUTO_FIELD == "django.db.models.BigAutoField"
-        assert settings.CORS_ALLOW_ALL_ORIGINS is True
+        assert settings.CORS_ALLOW_ALL_ORIGINS is True # TEST to mock for prod ?
         assert settings.AUTH_USER_MODEL == "users.EmailUser"
         assert settings.AUTHENTICATION_BACKENDS == ["users.backend.EmailBackend"]

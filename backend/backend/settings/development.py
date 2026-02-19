@@ -1,6 +1,6 @@
 import os
 
-from backend.settings.base import *  # isort: skip
+from backend.settings.base import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-ci")
@@ -8,7 +8,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-ci")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", True)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Database for development
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
