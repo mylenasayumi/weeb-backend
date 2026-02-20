@@ -7,17 +7,8 @@ from rest_framework.response import Response
 
 from .serializers import UserCreateSerializer, UserSerializer
 
-
 User = get_user_model()
 logger = logging.getLogger("users")
-
-class IsSelf(permissions.BasePermission):
-    """
-    Custom permission that allows users to access/modify their own data.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        return obj.id == getattr(request.user, "id", None)
 
 
 class UserViewSet(viewsets.ModelViewSet):
