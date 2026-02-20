@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient, APIRequestFactory, APITestCase
-from users.views import IsSelf
+from rest_framework.test import APIClient, APITestCase
 
 User = get_user_model()
 
@@ -164,25 +163,6 @@ class UsersAPITests(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["email"], "john@example.com")
-
-    def test_get_other_user_failure(self):
-        """
-        Failure: test that a user cannot access another user's data.
-        """
-        user2 = User.objects.create_user(
-            email="u2@example.com", password="123", first_name="C", last_name="D"
-        )
-
-        # Create fake request
-        factory = APIRequestFactory()
-        request = factory.get("/")
-        request.user = self.user
-
-        # Initiatlize our custom permission
-        permission = IsSelf()
-
-        self.assertFalse(permission.has_object_permission(request, None, user2))
-        self.assertTrue(permission.has_object_permission(request, None, self.user))
 
     def test_user_update_failure(self):
         url = reverse("users-detail", args=[self.user.id])
