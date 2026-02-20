@@ -9,12 +9,21 @@ from backend.settings.base import *
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-ci")
 
 DEBUG = os.getenv("DEBUG", False)
+print("la", os.getenv("DEBUG", False))
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+print("ici", os.environ.get("ALLOWED_HOSTS", "").split(","))
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
 CORS_ALLOW_ALL_ORIGINS = False
 
-CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+
+
+print("SPECIAL TESTS")
+print("DEBUG ", DEBUG)
+print("ALLOWED_HOSTS ", ALLOWED_HOSTS)
+print("SPECIAL TESTS")
+print("SPECIAL TESTS")
 
 # ==============================================================================
 # DATABASE PRODUCTION
