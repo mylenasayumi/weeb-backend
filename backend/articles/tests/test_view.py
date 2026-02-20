@@ -1,13 +1,11 @@
+from articles.models import Article
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.urls import reverse
-
 from rest_framework.test import APIClient, APITestCase
 
-from articles.models import Article
-
-
 User = get_user_model()
+
 
 class ArticleViewTests(APITestCase):
     """
@@ -168,7 +166,6 @@ class ArticleViewTests(APITestCase):
         self.article1.refresh_from_db()
         self.assertNotEqual(self.article1.title, data["description"])
 
-
     ############ DELETE ############
     def test_delete_article_success(self):
         """
@@ -178,7 +175,6 @@ class ArticleViewTests(APITestCase):
 
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Article.objects.filter(pk=self.article1.pk).exists())
-
 
     def test_update_article_not_owner_failure(self):
         """
@@ -204,6 +200,6 @@ class ArticleViewTests(APITestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertIn(
-            "You are not authorized to modify this article.",
+            "You do not have permission to perform this action.",
             str(response.data["detail"]),
         )
