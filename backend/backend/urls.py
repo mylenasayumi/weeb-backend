@@ -14,16 +14,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+from articles.views import ArticleViewSet
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
-
-from articles.views import ArticleViewSet
-from backend.views import MyTokenObtainPairView
 from satisfactions.views import SatisfactionView
-from users.views import UserViewSet
+from users.views import (
+    PasswordResetConfirmView,
+    RequestPasswordResetEmailView,
+    UserViewSet,
+)
 
+from backend.views import MyTokenObtainPairView
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet, basename="users")
@@ -37,4 +41,15 @@ urlpatterns = [
     # Auth JWT
     path("api/auth/token/", MyTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # Reset password
+    path(
+        "api/password-reset/request/",
+        RequestPasswordResetEmailView.as_view(),
+        name="password_reset_request",
+    ),
+    path(
+        "api/password-reset/confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
 ]
