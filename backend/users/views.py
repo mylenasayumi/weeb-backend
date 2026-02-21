@@ -73,7 +73,7 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         email = serializer.validated_data["email"]
-        user = User.objects.filter(email=email, is_active=True).first()
+        user = User.objects.filter(email=email).first()
 
         if user:
             # Generate token
@@ -86,6 +86,8 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
             print(f"---- RESET EMAIL SENT TO {user.email} ----")
             print(f"Link: {reset_url}")
             print("------------------------------------------------------")
+            logger.info(f"Password reset requested for email={user.email}")
+            logger.info(f"Reset link: {reset_url}")
 
         # Always returns the same response, regardless of whether the user exists or not.
         return Response(
@@ -109,7 +111,7 @@ class PasswordResetConfirmView(generics.GenericAPIView):
 
         try:
             user_id = smart_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(id=user_id, is_active=True)
+            user = User.objects.get(id=user_id)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
                 return Response(
