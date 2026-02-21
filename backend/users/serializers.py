@@ -36,3 +36,22 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """
+    Serializer for password reset requests.
+    Simply validates that the email address field is correctly filled in.
+    """
+
+    email = serializers.EmailField(required=True)
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """
+    Serializer for confirming the reset.
+    Validates the new password and token.
+    """
+
+    token = serializers.CharField(required=True)
+    password = serializers.CharField(write_only=True, required=True)
