@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -44,6 +45,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    # 'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -169,3 +171,26 @@ LOGGING = {
         },
     },
 }
+
+
+# oauth
+# SOCIALACCOUNT_PROVIDERS = {
+#     'github': {
+#         'APP': {
+#             'client_id': os.getenv("GITHUB_CLIENT_ID"),
+#             'secret':  os.getenv("GITHUB_CLIENT_SECRET"),
+#             'key': ''
+#         }
+#     }
+# }
+# ACCOUNT_LOGIN_METHODS = {"email"}
+
+# ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+
+# SITE_ID = 1
+
+
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+GITHUB_CALLBACK_URL = "http://127.0.0.1:8000/api/auth/github/callback/"
+FRONTEND_URL = "http://127.0.0.1:5173"
