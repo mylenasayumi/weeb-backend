@@ -1,8 +1,18 @@
 import logging
 
+import requests
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.shortcuts import redirect
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 logger = logging.getLogger("auth")
+
+
+User = get_user_model()
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -18,17 +28,6 @@ class MyTokenObtainPairView(TokenObtainPairView):
             raise
 
         return response
-
-
-import requests
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.shortcuts import redirect
-from rest_framework.permissions import AllowAny
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-
-User = get_user_model()
 
 
 class GithubLoginRedirectView(APIView):
