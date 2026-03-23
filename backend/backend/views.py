@@ -30,7 +30,9 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 
 class GithubLoginRedirectView(APIView):
-    """Redirige l'user vers GitHub pour autorisation"""
+    """
+    Redirect user to Github page for authorization.
+    """
 
     permission_classes = [AllowAny]
 
@@ -45,7 +47,9 @@ class GithubLoginRedirectView(APIView):
 
 
 class GithubCallbackView(APIView):
-    """Reçoit le code GitHub, crée/récupère le user, renvoie un JWT"""
+    """
+    Recieve the Github code, create user and send back access and refresh tokens
+    """
 
     permission_classes = [AllowAny]
 
