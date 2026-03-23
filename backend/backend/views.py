@@ -11,7 +11,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 logger = logging.getLogger("auth")
 
-
 User = get_user_model()
 
 
