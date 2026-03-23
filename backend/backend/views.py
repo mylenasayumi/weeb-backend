@@ -14,9 +14,6 @@ logger = logging.getLogger("auth")
 User = get_user_model()
 
 
-User = get_user_model()
-
-
 class MyTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
