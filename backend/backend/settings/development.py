@@ -1,7 +1,5 @@
 import os
 
-from backend.settings.base import *
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-ci")
 
@@ -32,3 +30,8 @@ if os.environ.get("CI") == "true":
             "NAME": ":memory:",
         }
     }
+
+# Frontend URLs
+ALLOWED_FRONTEND_URLS = [
+    "http://localhost:5173",  # Vite dev server
+]
