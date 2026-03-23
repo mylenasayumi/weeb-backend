@@ -35,12 +35,6 @@ class GithubLoginRedirectView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        print(
-            "DANS LA REQUETE GET DE GithubLoginRedirectView ",
-            settings.GITHUB_CLIENT_ID,
-            settings.GITHUB_CALLBACK_URL,
-            flush=True,
-        )
         github_auth_url = (
             f"https://github.com/login/oauth/authorize"
             f"?client_id={settings.GITHUB_CLIENT_ID}"
