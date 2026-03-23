@@ -43,12 +43,12 @@ urlpatterns = [
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     # Reset password
     path(
-        "api/password-reset/request/",
+        "api/users/password-reset/request/",
         RequestPasswordResetEmailView.as_view(),
         name="password_reset_request",
     ),
     path(
-        "api/password-reset/confirm/",
+        "api/users/password-reset/confirm/",
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
