@@ -1,6 +1,6 @@
 import os
 
-from backend.settings.base import *
+from backend.settings.base import *  # noqa
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-ci")
