@@ -1,5 +1,6 @@
 import logging
 
+from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -67,3 +68,13 @@ class ArticleViewSet(viewsets.ModelViewSet):
         )
 
         return response
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Override default Retrieve() function to increment the number of views of the article.
+        """
+        article = self.get_object()
+        Article.objects.filter(id=article.id).update(views=F("views") + 1)
+        article.refresh_from_db()
+
+        return super().retrieve(request, *args, **kwargs)

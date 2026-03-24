@@ -15,6 +15,7 @@ class Article(models.Model):
     image = models.URLField(max_length=500, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
+    views = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"title: {self.title}"
