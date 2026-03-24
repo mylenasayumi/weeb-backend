@@ -71,6 +71,24 @@ def test_create_article_empty_description_failure(authenticated_client):
     assert response.json()["description"][0] in expected_output
 
 
+def test_set_views_on_create_failure(authenticated_client):
+    """
+    Should ignore any attempt to set views on article creation.
+    """
+    data = {
+        "title": "Article with Views",
+        "description": "This article tries to set views on creation.",
+        "image": "",
+        "views": 100,
+    }
+    list_url = reverse("articles-list")
+
+    response = authenticated_client.post(list_url, data=data, format="json")
+
+    assert response.status_code == 201
+    assert response.json()["views"] == 0
+
+
 ############ LIST & RETRIEVE ############
 def test_list_articles_with_pagination_success(authenticated_client, article):
     """
@@ -89,15 +107,38 @@ def test_list_articles_with_pagination_success(authenticated_client, article):
 
 def test_retrieve_article_success(authenticated_client, article):
     """
-    Should return the details of a specific article.
+    Should return the details of a specific article and increment views.
     """
     detail_url = reverse("articles-detail", args=[article.pk])
 
+    initial_views = article.views
+
     response = authenticated_client.get(detail_url)
+
+    article.refresh_from_db()
 
     assert response.status_code == 200
     assert response.json()["title"] == article.title
     assert response.json()["user"] == article.user.id
+    assert response.json()["views"] == initial_views + 1
+
+
+def test_article_views_increment_multiple_times_success(authenticated_client, article):
+    """
+    Should increment the views count each time the article is retrieved.
+    """
+    detail_url = reverse("articles-detail", args=[article.pk])
+
+    initial_views = article.views
+
+    # Retrieve the article 3 times
+    for _ in range(3):
+        response = authenticated_client.get(detail_url)
+        assert response.status_code == 200
+
+    article.refresh_from_db()
+
+    assert article.views == initial_views + 3
 
 
 ############ SEARCH & ORDERING ############
