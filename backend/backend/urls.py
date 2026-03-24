@@ -40,6 +40,7 @@ router.register(r"likes", LikeViewSet, basename="likes")
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
+    path("admin_tools_stats/", include("admin_tools_stats.urls")),
     path("api/", include(router.urls)),
     path("api/satisfactions/", SatisfactionView.as_view(), name="satisfactions_create"),
     # Auth JWT

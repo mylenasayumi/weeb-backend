@@ -19,6 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Application definition
 INSTALLED_APPS = [
+    "jazzmin",
+    "admin_tools_stats",
+    "django_nvd3",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -177,3 +180,22 @@ GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 GITHUB_CALLBACK_URL = os.getenv("GITHUB_CALLBACK_URL")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL")
+
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Weeb Backend",
+    "copyright": "Mylena & Pierre",
+    "topmenu_links": [
+        # App with dropdown menu to all its models pages (Permissions checked against models)
+        {"app": "users"},
+        {"app": "articles"},
+        {"app": "likes"},
+        # Create issue
+        {
+            "name": "Issues",
+            "url": "https://github.com/mylenasayumi/weeb-backend/issues",
+            "new_window": True,
+        },
+    ],
+    "show_ui_builder": False,  # toggle it
+}
