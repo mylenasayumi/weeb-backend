@@ -22,7 +22,11 @@ from likes.views import LikeViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from satisfactions.views import SatisfactionView
-from users.views import UserViewSet
+from users.views import (
+    PasswordResetConfirmView,
+    RequestPasswordResetEmailView,
+    UserViewSet,
+)
 
 from backend.views import (
     GithubCallbackView,
@@ -50,5 +54,16 @@ urlpatterns = [
         "api/auth/github/callback/",
         GithubCallbackView.as_view(),
         name="github_callback",
+    ),
+    # Reset password
+    path(
+        "api/users/password-reset/request/",
+        RequestPasswordResetEmailView.as_view(),
+        name="password_reset_request",
+    ),
+    path(
+        "api/users/password-reset/confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
     ),
 ]

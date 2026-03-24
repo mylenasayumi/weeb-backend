@@ -32,3 +32,8 @@ if os.environ.get("CI") == "true":
             "NAME": ":memory:",
         }
     }
+
+# Frontend URLs
+ALLOWED_FRONTEND_URLS = [
+    "http://localhost:5173",  # Vite dev server
+]
