@@ -1,129 +1,117 @@
 import os
-import unittest
 from unittest.mock import patch
 
-from django.contrib.auth import get_user_model
+import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient, APITestCase
+from rest_framework import status
 from satisfactions.models import Satisfaction
 
-User = get_user_model()
-from rest_framework import status
+pytestmark = pytest.mark.django_db
 
 
-class SatisfactionsViewTests(APITestCase):
+############ CREATE ############
+@pytest.mark.skipif(
+    os.getenv("CI") == "true", reason="Skip test because no pkl files are pushed"
+)
+@patch("satisfactions.serializers.detect", return_value="fr")
+def test_create_satisfaction_fr_success(mock_detect, authenticated_client):
     """
-    Unit tests for the SatisfactionAPIView.
+    Should create a new satisfaction form when valid data is provided.
     """
+    # ARRANGE
+    data = {
+        "description": "je parle français et ça marche",
+        "email": "user@user.com",
+        "first_name": "user",
+        "last_name": "user",
+    }
+    list_url = reverse("satisfactions_create")
 
-    def setUp(self):
-        """
-        Create example of satisfactions.
-        """
-        self.user = User.objects.create_user(
-            email="john@example.com",
-            password="pass12345",
-            first_name="John",
-            last_name="Doe",
-        )
-        self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
+    # ACT
+    response = authenticated_client.post(list_url, data=data, format="json")
 
-        self.satisfaction = Satisfaction.objects.create(
-            polarity=1, description="Great experience!", user=self.user
-        )
+    # ASSERT
+    assert response.status_code == status.HTTP_201_CREATED
+    assert Satisfaction.objects.count() == 1
 
-        self.list_url = reverse("satisfactions_create")
 
-        self.detail_url = lambda pk: reverse("satisfactions-detail", args=[pk])
+@pytest.mark.skipif(
+    os.getenv("CI") == "true", reason="Skip test because no pkl files are pushed"
+)
+@patch("satisfactions.serializers.detect", return_value="en")
+def test_create_satisfaction_en_success(mock_detect, authenticated_client):
+    """
+    Should create a new satisfaction form when valid data is provided.
+    """
+    # ARRANGE
+    data = {
+        "description": "I love you, you are so beautiful",
+        "email": "user@user.com",
+        "first_name": "user",
+        "last_name": "user",
+    }
+    list_url = reverse("satisfactions_create")
 
-    ############ CREATE ############
-    @unittest.skipIf(
-        os.getenv("CI") == "true", "Skip test because no pkl files are pushed"
-    )
-    @patch("satisfactions.serializers.detect", return_value="fr")
-    def test_create_satisfaction_fr_success(self, mock_detect):
-        """
-        Should create a new satisfaction form when valid data is provided.
-        """
-        data = {
-            "description": "je parle français et ça marche",
-            "email": "user@user.com",
-            "first_name": "user",
-            "last_name": "user",
-        }
+    # ACT
+    response = authenticated_client.post(list_url, data=data, format="json")
 
-        response = self.client.post(self.list_url, data=data, format="json")
+    # ASSERT
+    assert response.status_code == status.HTTP_201_CREATED
+    assert Satisfaction.objects.count() == 1
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Satisfaction.objects.count(), 2)
 
-    @unittest.skipIf(
-        os.getenv("CI") == "true", "Skip test because no pkl files are pushed"
-    )
-    @patch("satisfactions.serializers.detect", return_value="en")
-    def test_create_satisfaction_en_success(self, mock_detect):
-        """
-        Should create a new satisfaction form when valid data is provided.
-        """
-        data = {
-            "description": "I love you, you are so beautiful",
-            "email": "user@user.com",
-            "first_name": "user",
-            "last_name": "user",
-        }
+@pytest.mark.skipif(
+    os.getenv("CI") == "true", reason="Skip test because no pkl files are pushed"
+)
+@patch("satisfactions.serializers.detect", return_value="fr")
+@patch("satisfactions.serializers.os.path.isfile", return_value=False)
+def test_create_satisfaction_missing_model_fr_failure(
+    mock_isfile, mock_detect, authenticated_client
+):
+    """
+    Should return 400 if the model file is missing for French language.
+    """
+    # ARRANGE
+    data = {
+        "description": "je parle français et ça marche",
+        "email": "user@user.com",
+        "first_name": "user",
+        "last_name": "user",
+    }
+    list_url = reverse("satisfactions_create")
 
-        response = self.client.post(self.list_url, data=data, format="json")
+    # ACT
+    response = authenticated_client.post(list_url, data=data, format="json")
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Satisfaction.objects.count(), 2)
+    # ASSERT
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Sorry we can not know" in str(response.data)
 
-    @unittest.skipIf(
-        os.getenv("CI") == "true", "Skip test because no pkl files are pushed"
-    )
-    @patch("satisfactions.serializers.detect", return_value="fr")
-    @patch("satisfactions.serializers.os.path.isfile", return_value=False)
-    def test_create_satisfaction_missing_model_fr_failure(
-        self, mock_isfile, mock_detect
-    ):
-        """
-        Should return 400 if the model file is missing for French language.
-        """
-        self.client.force_authenticate(user=self.user)
 
-        data = {
-            "description": "je parle français et ça marche",
-            "email": "user@user.com",
-            "first_name": "user",
-            "last_name": "user",
-        }
+@pytest.mark.django_db
+@pytest.mark.skipif(
+    os.getenv("CI") == "true", reason="Skip test because no pkl files are pushed"
+)
+@patch("satisfactions.serializers.detect", return_value="en")
+@patch("satisfactions.serializers.os.path.isfile", return_value=False)
+def test_create_satisfaction_missing_model_en_failure(
+    mock_isfile, mock_detect, authenticated_client
+):
+    """
+    Should return 400 if the model file is missing for English language.
+    """
+    # ARRANGE
+    data = {
+        "description": "Bryan is in the kitchen",
+        "email": "user@user.com",
+        "first_name": "user",
+        "last_name": "user",
+    }
+    list_url = reverse("satisfactions_create")
 
-        response = self.client.post(self.list_url, data=data, format="json")
+    # ACT
+    response = authenticated_client.post(list_url, data=data, format="json")
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Sorry we can not know", str(response.data))
-
-    @unittest.skipIf(
-        os.getenv("CI") == "true", "Skip test because no pkl files are pushed"
-    )
-    @patch("satisfactions.serializers.detect", return_value="en")
-    @patch("satisfactions.serializers.os.path.isfile", return_value=False)
-    def test_create_satisfaction_missing_model_en_failure(
-        self, mock_isfile, mock_detect
-    ):
-        """
-        Should return 400 if the model file is missing for English language.
-        """
-        self.client.force_authenticate(user=self.user)
-
-        data = {
-            "description": "Bryan is in the kitchen",
-            "email": "user@user.com",
-            "first_name": "user",
-            "last_name": "user",
-        }
-
-        response = self.client.post(self.list_url, data=data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Sorry we can not know", str(response.data))
+    # ASSERT
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Sorry we can not know" in str(response.data)

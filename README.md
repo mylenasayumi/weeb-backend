@@ -123,6 +123,9 @@ docker compose exec api python manage.py <command>
 ```bash
 docker compose exec api coverage run manage.py test
 ```
+```bash
+docker compose exec api pytest  --cov  --cov-report=term-missing
+```
 
 ### Generate Coverage Report
 

@@ -1,31 +1,14 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from satisfactions.models import Satisfaction
+import pytest
 
-User = get_user_model()
+pytestmark = pytest.mark.django_db
 
 
-class SatisfactionsModelTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="john@example.com",
-            password="pass12345",
-            first_name="John",
-            last_name="Doe",
-        )
+def test_satisfcation_str_success(satisfaction):
+    """
+    Should properly display satisfaction.__str__()
+    """
+    # ARRANGE
+    expected_output = f"Satisfaction Form: {satisfaction.first_name} {satisfaction.last_name} sent a satisfaction comment on {satisfaction.created_at}."
 
-        self.satisfaction = Satisfaction.objects.create(
-            email="john@example.com",
-            first_name="John",
-            last_name="Doe",
-            description="Great experience!",
-            user=self.user,
-            polarity=True,
-        )
-
-    def test_get_str_success(self):
-        """
-        Test __str__ method returns correct string
-        """
-        expected_output = f"Satisfaction Form: {self.satisfaction.first_name} {self.satisfaction.last_name} sent a satisfaction comment on {self.satisfaction.created_at}."
-        self.assertEqual(str(self.satisfaction), expected_output)
+    # ASSERT
+    assert expected_output in satisfaction.__str__()
