@@ -21,11 +21,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from satisfactions.views import SatisfactionView
-from users.views import (
-    PasswordResetConfirmView,
-    RequestPasswordResetEmailView,
-    UserViewSet,
-)
+from users.views import UserViewSet
 
 from backend.views import MyTokenObtainPairView
 
@@ -41,15 +37,4 @@ urlpatterns = [
     # Auth JWT
     path("api/auth/token/", MyTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    # Reset password
-    path(
-        "api/users/password-reset/request/",
-        RequestPasswordResetEmailView.as_view(),
-        name="password_reset_request",
-    ),
-    path(
-        "api/users/password-reset/confirm/",
-        PasswordResetConfirmView.as_view(),
-        name="password_reset_confirm",
-    ),
 ]

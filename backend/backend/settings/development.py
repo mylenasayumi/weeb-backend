@@ -30,8 +30,3 @@ if os.environ.get("CI") == "true":
             "NAME": ":memory:",
         }
     }
-
-# Frontend URLs
-ALLOWED_FRONTEND_URLS = [
-    os.getenv("FRONTEND_URL"),
-]

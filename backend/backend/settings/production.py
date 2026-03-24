@@ -27,8 +27,3 @@ DATABASES = {"default": dj_database_url.config(conn_max_age=600, ssl_require=Tru
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-# Frontend URLs : should be set to the actual frontend URLs in production
-ALLOWED_FRONTEND_URLS = [
-    os.getenv("FRONTEND_URL"),
-]

@@ -1,22 +1,11 @@
 import logging
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_bytes, smart_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from rest_framework import generics, permissions, status, viewsets
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
 
-from .serializers import (
-    PasswordResetConfirmSerializer,
-    PasswordResetRequestSerializer,
-    UserCreateSerializer,
-    UserSerializer,
-)
-from .throttling import PasswordResetThrottle
+from .serializers import UserCreateSerializer, UserSerializer
 
 User = get_user_model()
 logger = logging.getLogger("users")
@@ -66,88 +55,3 @@ class UserViewSet(viewsets.ModelViewSet):
             raise
 
         return response
-
-
-class RequestPasswordResetEmailView(generics.GenericAPIView):
-    serializer_class = PasswordResetRequestSerializer
-    throttle_classes = [PasswordResetThrottle, AnonRateThrottle]
-
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        email = serializer.validated_data["email"]
-        user = User.objects.filter(email=email).first()
-
-        if user:
-            # Generate token
-            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
-            token = PasswordResetTokenGenerator().make_token(user)
-            frontend_url = request.data.get("frontend_url")
-            if frontend_url and frontend_url in settings.ALLOWED_FRONTEND_URLS:
-                selected_frontend_url = frontend_url
-            else:
-                selected_frontend_url = (
-                    settings.ALLOWED_FRONTEND_URLS[0]
-                    if settings.ALLOWED_FRONTEND_URLS
-                    else "http://localhost:5173"
-                )
-
-            reset_url = (
-                f"{selected_frontend_url}/reset-password?uidb64={uidb64}&token={token}"
-            )
-
-            # Email sending simulation
-            print(f"---- RESET EMAIL SENT TO {user.email} ----")
-            print(f"Link: {reset_url}")
-            print("------------------------------------------------------")
-            logger.info(f"Password reset requested for email={user.email}")
-            logger.debug(f"Reset link: {reset_url}")
-
-        # Always returns the same response, regardless of whether the user exists or not.
-        return Response(
-            {
-                "message": "If an account is associated with this email, you will receive instructions to reset your password."
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-class PasswordResetConfirmView(generics.GenericAPIView):
-    serializer_class = PasswordResetConfirmSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        token = serializer.validated_data["token"]
-        password = serializer.validated_data["password"]
-        uidb64 = request.query_params.get("uidb64")
-
-        if not uidb64:
-            return Response(
-                {"error": "Missing uidb64 parameter."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            user_id = smart_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(id=user_id)
-
-            if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response(
-                    {"error": "Invalid or expired token."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            user.set_password(password)
-            user.save()
-
-            return Response(
-                {"message": "Password reset successfully."}, status=status.HTTP_200_OK
-            )
-
-        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
-            return Response(
-                {"error": "Invalid reset link."}, status=status.HTTP_400_BAD_REQUEST
-            )
