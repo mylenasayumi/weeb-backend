@@ -29,6 +29,8 @@ from backend.views import (
     MyTokenObtainPairView,
 )
 
+# test
+
 router = DefaultRouter()
 router.register(r"users", UserViewSet, basename="users")
 router.register(r"articles", ArticleViewSet, basename="articles")
