@@ -1,5 +1,8 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
+from django.utils.encoding import smart_bytes
+from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 
 User = get_user_model()
@@ -252,199 +255,190 @@ def test_get_UserSerializer_success(user, authenticated_client):
     assert "email" in response.data["results"][0]
 
 
-# class UsersAPITests(APITestCase):
-#     def setUp(self):
-#         self.user = User.objects.create_user(
-#             email="john@example.com",
-#             password="pass12345",
-#             first_name="John",
-#             last_name="Doe",
-#         )
-#         self.client = APIClient()
+def test_password_reset_request_success(api_client, user):
+    """
+    Test that a password reset request returns a generic success message and prints the reset link with the correct frontend_url.
+    """
+    # ARRANGE
+    url = reverse("password_reset_request")
+    payload = {
+        "email": "john@example.com",
+        "frontend_url": "http://testfrontend.com",
+    }
 
-#     # def test_create_user_success(self):
-#     #     """
-#     #     Test successful user registration
-#     #         should not return a password
-#     #     """
-#     #     url = reverse("users-list")  # POST /api/users/
-#     #     payload = {
-#     #         "email": "jane@example.com",
-#     #         "first_name": "Jane",
-#     #         "last_name": "Doe",
-#     #         "password": "pass12345",
-#     #     }
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     #     res = self.client.post(url, payload, format="json")
+    # ASSERT
+    assert res.status_code == status.HTTP_200_OK
+    assert "If an account is associated with this email" in res.json()["message"]
 
-#     #     self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-#     #     self.assertIn(payload["email"], res.data["email"])
-#     #     self.assertNotIn("password", res.data)
 
-#     # def test_create_user_same_email_failure(self):
-#     #     url = reverse("users-list")  # POST /api/users/
-#     #     expected_output = {"email": ["user with this email already exists."]}
-#     #     payload = {
-#     #         "email": "john@example.com",
-#     #         "first_name": "Jon",
-#     #         "last_name": "Doe",
-#     #         "password": "pass12345",
-#     #     }
+def test_password_reset_request_nonexistent_email(api_client):
+    """
+    Test that a password reset request for a nonexistent email still returns a generic success message.
+    """
+    # ARRANGE
+    url = reverse("password_reset_request")
+    payload = {
+        "email": "doesnotexist@example.com",
+        "frontend_url": "http://testfrontend.com",
+    }
 
-#     #     res = self.client.post(url, payload, format="json")
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     #     self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-#     #     self.assertEqual(res.json(), expected_output)
+    # ASSERT
+    assert res.status_code == status.HTTP_200_OK
+    assert "If an account is associated with this email" in res.json()["message"]
 
-#     # def test_create_user_no_first_name_failure(self):
-#     #     url = reverse("users-list")  # POST /api/users/
-#     #     expected_output = {"first_name": ["This field may not be blank."]}
 
-#     #     payload = {
-#     #         "email": "other@example.com",
-#     #         "first_name": "",
-#     #         "last_name": "Doe",
-#     #         "password": "pass12345",
-#     #     }
-#     #     res = self.client.post(url, payload, format="json")
+def test_password_reset_confirm_success(api_client, user):
+    """
+    Test that a valid token and uidb64 allow password reset.
+    """
+    # ARRANGE
+    # Generate token for the user
+    uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+    token = PasswordResetTokenGenerator().make_token(user)
+    url = reverse("password_reset_confirm") + f"?uidb64={uidb64}"
+    payload = {"token": token, "password": "newpass12345"}
 
-#     #     self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-#     #     self.assertEqual(res.json(), expected_output)
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     # def test_create_user_no_last_name_failure(self):
-#     #     url = reverse("users-list")  # POST /api/users/
-#     #     expected_output = {"last_name": ["This field may not be blank."]}
+    # ASSERT
+    assert res.status_code == status.HTTP_200_OK
+    assert "Password reset successfully" in res.json()["message"]
 
-#     #     payload = {
-#     #         "email": "other@example.com",
-#     #         "first_name": "Jane",
-#     #         "last_name": "",
-#     #         "password": "pass12345",
-#     #     }
-#     #     res = self.client.post(url, payload, format="json")
+    # Check that the password was actually changed
+    user.refresh_from_db()
+    assert user.check_password("newpass12345")
 
-#     #     self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-#     #     self.assertEqual(res.json(), expected_output)
 
-#     # def test_create_user_no_password_failure(self):
-#     #     url = reverse("users-list")  # POST /api/users/
-#     #     expected_output = {"password": ["This field may not be blank."]}
+def test_password_reset_confirm_invalid_token(api_client, user):
+    """
+    Test that an invalid token does not allow password reset.
+    """
+    # ARRANGE
+    uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+    url = reverse("password_reset_confirm") + f"?uidb64={uidb64}"
+    payload = {"token": "invalidtoken", "password": "newpass12345"}
 
-#     #     payload = {
-#     #         "email": "other@example.com",
-#     #         "first_name": "Jane",
-#     #         "last_name": "Doe",
-#     #         "password": "",
-#     #     }
-#     #     res = self.client.post(url, payload, format="json")
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     #     self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-#     #     self.assertEqual(res.json(), expected_output)
+    # ASSERT
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Invalid or expired token" in res.json()["error"]
 
-#     # def test_get_tokens_success(self):
-#     #     """
-#     #     Test successful, response should have access and refresh
-#     #     """
-#     #     url = reverse("token_obtain_pair")
-#     #     self.user.is_active = True
-#     #     self.user.save()
 
-#     #     res = self.client.post(
-#     #         url, {"email": "john@example.com", "password": "pass12345"}
-#     #     )
+def test_password_reset_confirm_uidb64_token_mismatch(api_client, user):
+    """
+    Test that a valid token for one user cannot be used with another user's uidb64.
+    """
+    # ARRANGE
+    # Create a second user
+    user2 = User.objects.create_user(
+        email="jane@example.com",
+        password="pass12345",
+        first_name="Jane",
+        last_name="Doe",
+    )
 
-#     #     self.assertEqual(res.status_code, status.HTTP_200_OK)
-#     #     self.assertIn("access", res.json())
-#     #     self.assertIn("refresh", res.json())
+    # Generate token for user1
+    token = PasswordResetTokenGenerator().make_token(user)
+    # Use user2's uidb64
+    uidb64 = urlsafe_base64_encode(smart_bytes(user2.id))
+    url = reverse("password_reset_confirm") + f"?uidb64={uidb64}"
+    payload = {"token": token, "password": "newpass12345"}
 
-#     # def test_get_tokens_bad_email_failure(self):
-#     #     url = reverse("token_obtain_pair")
-#     #     expected_output = {
-#     #         "detail": "No active account found with the given credentials"
-#     #     }
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     #     res = self.client.post(
-#     #         url, {"email": "bad_email@example.com", "password": "pass12345"}
-#     #     )
+    # ASSERT
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Invalid or expired token" in res.json()["error"]
 
-#     #     self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-#     #     self.assertEqual(res.json(), expected_output)
 
-#     # def test_get_tokens_bad_pwd_failure(self):
-#     #     """
-#     #     Test de connexion avec JWT et récupération du profil utilisateur.
-#     #     Vérifie que l'utilisateur peut obtenir un token JWT et accéder à son profil via l'endpoint 'me'.
-#     #     """
-#     #     # Connexion et récupération du token JWT
-#     #     url = reverse("token_obtain_pair")
-#     #     expected_output = {
-#     #         "detail": "No active account found with the given credentials"
-#     #     }
+def test_password_reset_request_email_missing_failure(api_client):
+    """
+    Test that a password reset request without an email returns an error.
+    """
+    # ARRANGE
+    url = reverse("password_reset_request")
+    payload = {"frontend_url": "http://testfrontend.com"}
+    expected_output = {"email": ["This field is required."]}
 
-#     #     res = self.client.post(
-#     #         url, {"email": "john@example.com", "password": "BAD_PASSWORD"}
-#     #     )
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     #     self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-#     #     self.assertEqual(res.json(), expected_output)
+    # ASSERT
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert res.json() == expected_output
 
-#     # def test_get_me_url_success(self):
-#     #     """
-#     #     Test get me endpoint.
-#     #     """
-#     #     url = reverse("token_obtain_pair")
-#     #     self.user.is_active = True
-#     #     self.user.save()
 
-#     #     res = self.client.post(
-#     #         url, {"email": "john@example.com", "password": "pass12345"}
-#     #     )
+def test_password_reset_confirm_invalid_uidb64(api_client):
+    """
+    Test that a password reset confirmation with an invalid uidb64 fails.
+    """
+    # ARRANGE
+    url = reverse("password_reset_confirm") + "?uidb64=invaliduidb64"
+    payload = {"token": "validtoken", "password": "newpass12345"}
 
-#     #     access = res.data["access"]
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     #     url = reverse("users-me")
+    # ASSERT
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Invalid reset link." in res.json()["error"]
 
-#     #     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
-#     #     res = self.client.get(url)
 
-#     #     self.assertEqual(res.status_code, status.HTTP_200_OK)
-#     #     self.assertEqual(res.data["email"], "john@example.com")
+def test_password_reset_confirm_missing_uidb64(api_client):
+    """
+    Test that the password reset confirmation endpoint returns an error
+    if the 'uidb64' parameter is missing in the request.
+    """
+    # ARRANGE
+    url = reverse("password_reset_confirm")
+    payload = {"token": "validtoken", "password": "newpass12345"}
 
-#     # def test_user_update_failure(self):
-#     #     url = reverse("users-detail", args=[self.user.id])
-#     #     expected_output = {
-#     #         "detail": "You do not have permission to perform this action."
-#     #     }
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     #     self.client.force_authenticate(user=self.user)
-#     #     res = self.client.patch(url, {"first_name": "James"})
+    # ASSERT
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Missing uidb64 parameter." in res.json()["error"]
 
-#     #     self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
-#     #     self.assertEqual(res.json(), expected_output)
 
-#     # def test_admin_update_success(self):
-#     #     url = reverse("users-detail", args=[self.user.id])
-#     #     admin = User.objects.create_superuser(
-#     #         email="admin@example.com",
-#     #         password="admin12356",
-#     #         first_name="admin",
-#     #         last_name="admin",
-#     #     )
+def test_password_reset_request_with_frontend_url(api_client):
+    """
+    Test that the 'frontend_url' parameter is used correctly when provided in the request.
+    """
+    # ARRANGE
+    url = reverse("password_reset_request")
+    frontend_url = "http://customfrontend.com"
+    payload = {"email": "john@example.com", "frontend_url": frontend_url}
 
-#     #     self.client.force_authenticate(user=admin)
-#     #     res = self.client.patch(url, {"first_name": "Updated"})
+    # ACT
+    res = api_client.post(url, payload, format="json")
 
-#     #     self.assertEqual(res.status_code, status.HTTP_200_OK)
-#     #     self.assertEqual(res.data["first_name"], "Updated")
-#     #     self.assertNotIn("password", res.data)
+    # ASSERT
+    assert res.status_code == status.HTTP_200_OK
+    assert "If an account is associated with this email" in res.json()["message"]
 
-#     # def test_get_UserSerializer_success(self):
-#     #     """
-#     #     Ensure the correct serializer is used depending on the action (create vs list).
-#     #     """
-#     #     url = reverse("users-list")
-#     #     res = self.client.get(url)
 
-#     #     self.assertEqual(res.status_code, status.HTTP_200_OK)
-#     #     self.assertEqual(res.json()["count"], 1)
-#     #     self.assertIn("email", res.data["results"][0])
+def test_password_reset_request_without_frontend_url(api_client):
+    """
+    Test that the default frontend URL is used when 'frontend_url' parameter is not provided in the request.
+    """
+    # ARRANGE
+    url = reverse("password_reset_request")
+    payload = {"email": "john@example.com"}
+
+    # ACT
+    res = api_client.post(url, payload, format="json")
+
+    # ASSERT
+    assert res.status_code == status.HTTP_200_OK
+    assert "If an account is associated with this email" in res.json()["message"]
