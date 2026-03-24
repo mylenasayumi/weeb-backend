@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.cache import cache
 from django.urls import reverse
 from django.utils.encoding import smart_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -15,6 +16,9 @@ def test_create_user_success(api_client):
     """
     Should create a new user from the given data.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("users-list")
     payload = {
@@ -37,6 +41,9 @@ def test_create_user_same_email_failure(user, api_client):
     """
     Should not create a second user from the same data.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("users-list")
     expected_output = {"email": ["user with this email already exists."]}
@@ -59,6 +66,9 @@ def test_create_user_no_first_name_failure(api_client):
     """
     Should not create a user without a first name.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("users-list")
     expected_output = {"first_name": ["This field may not be blank."]}
@@ -81,6 +91,9 @@ def test_create_user_no_last_name_failure(api_client):
     """
     Should not create a user without a first name.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("users-list")
     expected_output = {"last_name": ["This field may not be blank."]}
@@ -103,6 +116,9 @@ def test_create_user_no_password_failure(api_client):
     """
     Should not create a user without a password.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("users-list")
     expected_output = {"password": ["This field may not be blank."]}
@@ -125,6 +141,9 @@ def test_get_tokens_success(api_client, user):
     """
     Should return access and refresh in response.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("token_obtain_pair")
     data = {"email": "john@example.com", "password": "pass12345"}
@@ -144,6 +163,9 @@ def test_get_tokens_bad_email_failure(api_client):
     """
     Should return access and refresh in response.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("token_obtain_pair")
     data = {"email": "bad_email@example.com", "password": "pass12345"}
@@ -161,6 +183,9 @@ def test_get_tokens_bad_pwd_failure(api_client):
     """
     Should not return access and refresh if a bad password is given.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("token_obtain_pair")
     data = {"email": "john@example.com", "password": "BAD_PASSWORD"}
@@ -178,6 +203,9 @@ def test_get_me_url_success(api_client, user):
     """
     Should access the endpoit me if logged in.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("token_obtain_pair")
     data = {"email": "john@example.com", "password": "pass12345"}
@@ -203,6 +231,9 @@ def test_user_update_failure(authenticated_client, user):
     """
     Should not allow a user to update himself.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("users-detail", args=[user.id])
     data = {"first_name": "James"}
@@ -220,6 +251,9 @@ def test_admin_update_success(user, authenticated_client):
     """
     Should allow admin to update a user.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     admin = User.objects.create_superuser(
         email="admin@example.com",
@@ -243,6 +277,9 @@ def test_get_UserSerializer_success(user, authenticated_client):
     """
     Should ensure the correct serializer is used depending on the action (create vs list).
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("users-list")
 
@@ -259,6 +296,9 @@ def test_password_reset_request_success(api_client, user):
     """
     Test that a password reset request returns a generic success message and prints the reset link with the correct frontend_url.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("password_reset_request")
     payload = {
@@ -278,6 +318,9 @@ def test_password_reset_request_nonexistent_email(api_client):
     """
     Test that a password reset request for a nonexistent email still returns a generic success message.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("password_reset_request")
     payload = {
@@ -297,6 +340,9 @@ def test_password_reset_confirm_success(api_client, user):
     """
     Test that a valid token and uidb64 allow password reset.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     # Generate token for the user
     uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
@@ -320,6 +366,9 @@ def test_password_reset_confirm_invalid_token(api_client, user):
     """
     Test that an invalid token does not allow password reset.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
     url = reverse("password_reset_confirm") + f"?uidb64={uidb64}"
@@ -337,6 +386,9 @@ def test_password_reset_confirm_uidb64_token_mismatch(api_client, user):
     """
     Test that a valid token for one user cannot be used with another user's uidb64.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     # Create a second user
     user2 = User.objects.create_user(
@@ -365,6 +417,9 @@ def test_password_reset_request_email_missing_failure(api_client):
     """
     Test that a password reset request without an email returns an error.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("password_reset_request")
     payload = {"frontend_url": "http://testfrontend.com"}
@@ -382,6 +437,9 @@ def test_password_reset_confirm_invalid_uidb64(api_client):
     """
     Test that a password reset confirmation with an invalid uidb64 fails.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("password_reset_confirm") + "?uidb64=invaliduidb64"
     payload = {"token": "validtoken", "password": "newpass12345"}
@@ -399,6 +457,9 @@ def test_password_reset_confirm_missing_uidb64(api_client):
     Test that the password reset confirmation endpoint returns an error
     if the 'uidb64' parameter is missing in the request.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("password_reset_confirm")
     payload = {"token": "validtoken", "password": "newpass12345"}
@@ -415,6 +476,9 @@ def test_password_reset_request_with_frontend_url(api_client):
     """
     Test that the 'frontend_url' parameter is used correctly when provided in the request.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("password_reset_request")
     frontend_url = "http://customfrontend.com"
@@ -432,6 +496,9 @@ def test_password_reset_request_without_frontend_url(api_client):
     """
     Test that the default frontend URL is used when 'frontend_url' parameter is not provided in the request.
     """
+    # Clear the cache before testing.
+    cache.clear()
+
     # ARRANGE
     url = reverse("password_reset_request")
     payload = {"email": "john@example.com"}
