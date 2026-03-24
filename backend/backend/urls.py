@@ -18,6 +18,7 @@ Including another URLconf
 from articles.views import ArticleViewSet
 from django.contrib import admin
 from django.urls import include, path
+from likes.views import LikeViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from satisfactions.views import SatisfactionView
@@ -34,6 +35,7 @@ from backend.views import (
 router = DefaultRouter()
 router.register(r"users", UserViewSet, basename="users")
 router.register(r"articles", ArticleViewSet, basename="articles")
+router.register(r"likes", LikeViewSet, basename="likes")
 
 urlpatterns = [
     # Admin

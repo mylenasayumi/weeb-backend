@@ -1,6 +1,7 @@
 import pytest
 from articles.models import Article
 from django.contrib.auth import get_user_model
+from likes.models import Like
 from rest_framework.test import APIClient
 from satisfactions.models import Satisfaction
 from satisfactions.serializers import SatisfactionSerializer
@@ -17,6 +18,19 @@ def user(db):
         email="john@example.com",
         password="pass12345",
         first_name="John",
+        last_name="Doe",
+    )
+
+
+@pytest.fixture
+def user2(db):
+    """
+    Fixture used to create and return a second standard user.
+    """
+    return User.objects.create_user(
+        email="patrick@example.com",
+        password="pass12345",
+        first_name="Patrick",
         last_name="Doe",
     )
 
@@ -82,3 +96,11 @@ def authenticated_client(api_client, user):
 @pytest.fixture
 def serializer():
     return SatisfactionSerializer(data={})
+
+
+@pytest.fixture
+def like(db, user, article):
+    """
+    Fixture used to add a like to an article from a user.
+    """
+    return Like.objects.create(user=user, article=article)
