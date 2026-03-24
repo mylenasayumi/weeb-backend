@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -169,3 +170,9 @@ LOGGING = {
         },
     },
 }
+
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+GITHUB_CALLBACK_URL = os.getenv("GITHUB_CALLBACK_URL")
+
+FRONTEND_URL = os.getenv("FRONTEND_URL")

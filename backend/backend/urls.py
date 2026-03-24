@@ -23,7 +23,13 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from satisfactions.views import SatisfactionView
 from users.views import UserViewSet
 
-from backend.views import MyTokenObtainPairView
+from backend.views import (
+    GithubCallbackView,
+    GithubLoginRedirectView,
+    MyTokenObtainPairView,
+)
+
+# test
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet, basename="users")
@@ -37,4 +43,10 @@ urlpatterns = [
     # Auth JWT
     path("api/auth/token/", MyTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/auth/github/", GithubLoginRedirectView.as_view(), name="github_login"),
+    path(
+        "api/auth/github/callback/",
+        GithubCallbackView.as_view(),
+        name="github_callback",
+    ),
 ]
