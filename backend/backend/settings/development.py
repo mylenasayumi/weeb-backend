@@ -33,5 +33,5 @@ if os.environ.get("CI") == "true":
 
 # Frontend URLs
 ALLOWED_FRONTEND_URLS = [
-    "http://localhost:5173",  # Vite dev server
+    os.getenv("FRONTEND_URL"),
 ]
