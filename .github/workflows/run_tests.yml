@@ -25,5 +25,5 @@ jobs:
         working-directory: backend
         env:
           CI: "true"
-          DJANGO_SETTINGS_MODULE: backend.settings.ci
+          DJANGO_SETTINGS_MODULE: backend.settings.development
         run: pytest
