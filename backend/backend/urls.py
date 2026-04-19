@@ -20,7 +20,6 @@ from django.contrib import admin
 from django.urls import include, path
 from likes.views import LikeViewSet
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
 from satisfactions.views import SatisfactionView
 from users.views import (
     PasswordResetConfirmView,
@@ -29,8 +28,10 @@ from users.views import (
 )
 
 from backend.views import (
+    CookieTokenRefreshView,
     GithubCallbackView,
     GithubLoginRedirectView,
+    LogoutView,
     MyTokenObtainPairView,
 )
 
@@ -49,7 +50,12 @@ urlpatterns = [
     path("api/satisfactions/", SatisfactionView.as_view(), name="satisfactions_create"),
     # Auth JWT
     path("api/auth/token/", MyTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path(
+        "api/auth/token/refresh/",
+        CookieTokenRefreshView.as_view(),
+        name="token_refresh",
+    ),
+    path("api/auth/logout/", LogoutView.as_view(), name="logout"),
     path("api/auth/github/", GithubLoginRedirectView.as_view(), name="github_login"),
     path(
         "api/auth/github/callback/",

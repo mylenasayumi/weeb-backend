@@ -8,9 +8,14 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-ci")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # Database for development
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -37,3 +42,9 @@ if os.environ.get("CI") == "true":
 ALLOWED_FRONTEND_URLS = [
     "http://localhost:5173",  # Vite dev server
 ]
+
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
