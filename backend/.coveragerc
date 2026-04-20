@@ -1,0 +1,3 @@
+[run]
+source = ./
+omit = */tests/* , ./satisfactions/management/commands/*, */__init__.py, */migrations/*
