@@ -119,6 +119,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 
 # Default primary key field type
@@ -178,14 +182,10 @@ LOGGING = {
             "handlers": ["console"],
             "level": "INFO",
         },
-    },
-    "loggers": {
         "users": {
             "handlers": ["console"],
             "level": "INFO",
         },
-    },
-    "loggers": {
         "articles": {
             "handlers": ["console"],
             "level": "INFO",
@@ -201,13 +201,27 @@ FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 
 JAZZMIN_SETTINGS = {
-    "site_title": "Weeb Backend",
+    "custom_css": "css/admin_custom.css",
+    "site_title": "Weeb Admin",
+    "site_header": "Weeb Admin",
+    "site_brand": "Dashboard",
+    "welcome_sign": "Welcome to Weeb Dashboard",
     "copyright": "Mylena & Pierre",
+    # Weeb Logo
+    "site_logo": "img/weeb.svg",
+    "login_logo": "img/weeb.svg",
+    "site_icon": "img/weeb.svg",
+    "search_model": [
+        "users.EmailUser",
+        "articles.Article",
+    ],
     "topmenu_links": [
+        {"name": "Admin Home", "url": "admin:index", "permissions": ["auth.view_user"]},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "users"},
         {"app": "articles"},
         {"app": "likes"},
+        {"app": "satisfactions"},
         # Create issue
         {
             "name": "Issues",
@@ -220,6 +234,72 @@ JAZZMIN_SETTINGS = {
             "new_window": True,
         },
     ],
+    "order_with_respect_to": ["users", "articles", "likes", "satisfactions"],
+    # Icons for each app
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "users.emailuser": "fas fa-user-circle",
+        "articles.article": "fas fa-newspaper",
+        "likes.like": "fas fa-thumbs-up",
+        "satisfactions.satisfaction": "fas fa-face-smile",
+    },
+    "default_icon_parents": "fas fa-folder",
+    "default_icon_children": "fas fa-circle",
+    # Dashboard behavior
+    "show_ui_builder": False,
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "custom_links": {
+        "users": [
+            {
+                "name": "Create an user",
+                "url": "admin:users_emailuser_add",
+                "icon": "fas fa-user-plus",
+                "permissions": ["users.add_emailuser"],
+            }
+        ],
+        "articles": [
+            {
+                "name": "Create an article",
+                "url": "admin:articles_article_add",
+                "icon": "fas fa-plus-circle",
+                "permissions": ["articles.add_article"],
+            }
+        ],
+        "satisfactions": [
+            {
+                "name": "Create a satisfaction form",
+                "url": "admin:satisfactions_satisfaction_add",
+                "icon": "fas fa-face-smile",
+                "permissions": ["satisfactions.add_satisfaction"],
+            }
+        ],
+    },
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "pulse",
+    "theme_colour": "purple",
+    "navbar": "navbar-primary",
+    "brand_colour": "navbar-dark",
+    "accent": "accent-primary",
+    "sidebar": "sidebar-dark",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
     "show_ui_builder": False,  # toggle it
     "site_icon": "weeb-favicon.ico",
     "login_logo": None,
