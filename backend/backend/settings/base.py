@@ -68,6 +68,17 @@ TEMPLATES = [
     },
 ]
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://weeb-redis:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+
 WSGI_APPLICATION = "backend.wsgi.application"
 
 
@@ -108,6 +119,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -202,6 +214,13 @@ JAZZMIN_SETTINGS = {
             "url": "https://github.com/mylenasayumi/weeb-backend/issues",
             "new_window": True,
         },
+        {
+            "name": "Graph",
+            "url": "http://127.0.0.1:8000/admin_tools_stats/analytics/",  # to check in prod
+            "new_window": True,
+        },
     ],
     "show_ui_builder": False,  # toggle it
+    "site_icon": "weeb-favicon.ico",
+    "login_logo": None,
 }
