@@ -4,14 +4,56 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect
+from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 logger = logging.getLogger("auth")
 
 User = get_user_model()
+
+
+class LogoutView(APIView):
+    permission_classes = [AllowAny]  # même sans token valide, on peut logout
+
+    def post(self, request):
+        response = Response({"detail": "Déconnecté."})
+        response.delete_cookie("refresh_token")
+        response.delete_cookie("access_token")
+        return response
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token manquant."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        request.data["refresh"] = refresh_token
+
+        try:
+            response = super().post(request, *args, **kwargs)
+        except (InvalidToken, TokenError) as e:
+            return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        refresh_token = response.data.pop("refresh", None)
+        if refresh_token:
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite="Lax",
+            )
+
+        return response
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -25,6 +67,16 @@ class MyTokenObtainPairView(TokenObtainPairView):
         except:
             logger.warning(f"Failed JWT login for email={email} from ip={ip}")
             raise
+
+        refresh_token = response.data.pop("refresh", None)
+        if refresh_token:
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite="Lax",
+            )
 
         return response
 
@@ -108,6 +160,7 @@ class GithubCallbackView(APIView):
             },
         )
 
+        user.is_active = True
         user.save()
 
         refresh = RefreshToken.for_user(user)
@@ -116,7 +169,22 @@ class GithubCallbackView(APIView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        return redirect(
-            f"{settings.FRONTEND_URL}/auth/callback"
-            f"?access={access_token}&refresh={refresh_token}"
+        response = redirect(f"{settings.FRONTEND_URL}/auth/callback")
+
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=False,
+            secure=not settings.DEBUG,
+            samesite="Lax",
+            max_age=60,
         )
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite="Lax",
+        )
+
+        return response

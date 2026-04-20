@@ -143,7 +143,6 @@ def test_get_tokens_success(api_client, user):
     # ASSERT
     assert res.status_code == status.HTTP_200_OK
     assert "access" in res.json()
-    assert "refresh" in res.json()
 
 
 def test_get_tokens_bad_email_failure(api_client):

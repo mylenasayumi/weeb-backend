@@ -143,8 +143,6 @@ def test_new_user_created_and_redirected_success(
     # ASSERT
     assert response.status_code == 302
     assert "/auth/callback" in response["Location"]
-    assert "access=" in response["Location"]
-    assert "refresh=" in response["Location"]
     assert User.objects.filter(email="newuser@github.com").exists()
 
 
