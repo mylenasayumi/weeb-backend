@@ -38,6 +38,13 @@ if os.environ.get("CI") == "true":
         }
     }
 
+if os.environ.get("CI") == "true":
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        }
+    }
+
 # Frontend URLs
 ALLOWED_FRONTEND_URLS = [
     "http://localhost:5173",  # Vite dev server

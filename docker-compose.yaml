@@ -32,5 +32,15 @@ services:
       timeout: 30s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: weeb-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
 volumes:
   mysql_data:
+  redis_data:

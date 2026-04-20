@@ -49,6 +49,8 @@ MarkupSafe==3.0.3
 python-dateutil==2.9.0.post0
 python-nvd3==0.16.0
 python-slugify==8.0.4
+django-redis==6.0.0
+redis==7.4.0
 
 
 

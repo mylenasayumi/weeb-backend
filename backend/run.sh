@@ -7,6 +7,7 @@ python manage.py migrate
 # Load fixtures
 python manage.py loaddata users/fixtures/users_fixtures.json || true
 python manage.py loaddata articles/fixtures/articles_fixtures.json || true
+python manage.py loaddata backend/fixtures/charts_fixtures.json || true
 
 
 ### Checking if dataframes are missing
