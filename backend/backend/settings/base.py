@@ -124,7 +124,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -206,20 +205,7 @@ JAZZMIN_SETTINGS = {
     "site_header": "Weeb Admin",
     "site_brand": "Dashboard",
     "welcome_sign": "Welcome to Weeb Dashboard",
-    "custom_css": "css/admin_custom.css",
-    "site_title": "Weeb Admin",
-    "site_header": "Weeb Admin",
-    "site_brand": "Dashboard",
-    "welcome_sign": "Welcome to Weeb Dashboard",
     "copyright": "Mylena & Pierre",
-    # Weeb Logo
-    "site_logo": "img/weeb.svg",
-    "login_logo": "img/weeb.svg",
-    "site_icon": "img/weeb.svg",
-    "search_model": [
-        "users.EmailUser",
-        "articles.Article",
-    ],
     # Weeb Logo
     "site_logo": "img/weeb.svg",
     "login_logo": "img/weeb.svg",
@@ -230,12 +216,10 @@ JAZZMIN_SETTINGS = {
     ],
     "topmenu_links": [
         {"name": "Admin Home", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "Admin Home", "url": "admin:index", "permissions": ["auth.view_user"]},
         # App with dropdown menu to all its models pages (Permissions checked against models)
         {"app": "users"},
         {"app": "articles"},
         {"app": "likes"},
-        {"app": "satisfactions"},
         {"app": "satisfactions"},
         # Create issue
         {
