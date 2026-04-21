@@ -1,0 +1,88 @@
+/* Main colour: purple */
+:root {
+    --primary: #9333EA;
+}
+
+/* Navbar */
+.navbar-primary,
+.main-header.navbar {
+    background-color: #C084FC !important;
+}
+
+/* Brand/Logo area */
+.main-sidebar .brand-link {
+    background-color: #C084FC !important;
+    color: #FFFFFF !important;
+}
+
+/* Buttons */
+.btn-primary,
+.btn-success,
+.btn-info {
+    background-color: #9333EA !important;
+    border-color: #9333EA !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-info:hover {
+    background-color: #C084FC !important;
+    border-color: #C084FC !important;
+}
+
+.btn-info {
+    background-color: #C084FC !important;
+    border-color: #C084FC !important;
+    color: #FFFFFF !important;
+}
+
+.btn-info:hover {
+    background-color: #9333EA !important;
+    border-color: #9333EA !important;
+}
+
+/* Search button */
+.navbar .btn-navbar {
+    background-color: #9333EA !important;
+    color: #FFFFFF !important;
+}
+
+/* Links */
+a {
+    color: #9333EA;
+}
+
+a:hover {
+    color: #C084FC;
+}
+
+/* Sidebar */
+.main-sidebar {
+    background-color: #0F172A !important;
+}
+
+.nav-sidebar .nav-link.active {
+    background-color: #9333EA !important;
+    color: #FFFFFF !important;
+}
+
+.nav-sidebar .nav-link:hover {
+    background-color: #0F172A !important;
+    color: #FFFFFF !important;
+}
+
+/* Pagination */
+.page-item.active .page-link {
+    background-color: #9333EA !important;
+    border-color: #9333EA !important;
+}
+
+/* Table highlights */
+thead th {
+    color: #9333EA !important;
+}
+
+/* Badges/accents */
+.badge-primary {
+    background-color: #9333EA !important;
+}

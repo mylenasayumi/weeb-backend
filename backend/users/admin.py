@@ -42,7 +42,7 @@ class UserAdmin(BaseUserAdmin):
                 )
             },
         ),
-        ("Important dates", {"fields": ("last_login", "date_joined")}),
+        ("Important dates", {"fields": ("last_login", "date_joined", "created_at")}),
     )
 
     add_fieldsets = (
