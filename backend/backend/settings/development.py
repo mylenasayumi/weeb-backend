@@ -10,12 +10,17 @@ DEBUG = os.getenv("DEBUG", True)
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
+
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
+    "password_reset": "100/hour",
+}
+
 
 # Database for development
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

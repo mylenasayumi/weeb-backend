@@ -4,11 +4,93 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.urls import reverse
+from rest_framework.response import Response
+from rest_framework_simplejwt.exceptions import InvalidToken
 
 User = get_user_model()
 
 # Indicate to pytest that it needs access to db
 pytestmark = pytest.mark.django_db
+
+
+def test_logout_view_deletes_tokens_success(api_client):
+    """
+    Should delete access and refresh token cookies on logout.
+    """
+    # ARRANGE
+    url = reverse("logout")
+
+    # ACT
+    response = api_client.post(url)
+
+    # ASSERT
+    assert response.status_code == 200
+    assert response.data["detail"] == "Déconnecté."
+
+    cookies = response.cookies
+    assert "refresh_token" in cookies
+    assert "access_token" in cookies
+
+
+def test_refresh_token_missing_failure(api_client):
+    """
+    Should return 401 if refresh token cookie is missing.
+    """
+    # ARRANGE
+    url = reverse("token_refresh")
+
+    # ACT
+    response = api_client.post(url)
+
+    # ASSERT
+    assert response.status_code == 401
+    assert response.data["detail"] == "Refresh token manquant."
+
+
+@patch("backend.views.TokenRefreshView.post")
+def test_refresh_token_invalid_failure(mock_super_post, api_client):
+    """
+    Should return 401 when refresh token is invalid.
+    """
+    # ARRANGE
+    url = reverse("token_refresh")
+
+    mock_super_post.side_effect = InvalidToken("Token invalide")
+
+    api_client.cookies["refresh_token"] = "bad_refresh_token"
+
+    # ACT
+    response = api_client.post(url)
+
+    # ASSERT
+    assert response.status_code == 401
+
+
+@patch("backend.views.TokenRefreshView.post")
+def test_refresh_token_success(mock_super_post, api_client):
+    """
+    Should refresh token and reset refresh_token cookie.
+    """
+    # ARRANGE
+    url = reverse("token_refresh")
+
+    mock_response = Response(
+        {
+            "access": "new_access_token",
+            "refresh": "new_refresh_token",
+        }
+    )
+
+    mock_super_post.return_value = mock_response
+
+    api_client.cookies["refresh_token"] = "old_refresh_token"
+
+    # ACT
+    response = api_client.post(url)
+
+    # ASSERT
+    assert response.status_code == 200
+    assert "refresh_token" in response.cookies
 
 
 def test_redirect_to_github_success(api_client, settings):

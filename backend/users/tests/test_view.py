@@ -463,3 +463,29 @@ def test_password_reset_request_without_frontend_url(api_client):
     # ASSERT
     assert res.status_code == status.HTTP_200_OK
     assert "If an account is associated with this email" in res.json()["message"]
+
+
+def test_password_reset_uses_allowed_frontend_url(api_client, user, settings, capsys):
+    """
+    Should use the provided frontend_url when it is in ALLOWED_FRONTEND_URLS.
+    """
+
+    # ARRANGE
+    allowed_url = "http://localhost:3000"
+    settings.ALLOWED_FRONTEND_URLS = [allowed_url]
+
+    url = reverse("password_reset_request")
+    payload = {
+        "email": user.email,
+        "frontend_url": allowed_url,
+    }
+
+    # ACT
+    res = api_client.post(url, payload, format="json")
+
+    # ASSERT
+    assert res.status_code == status.HTTP_200_OK
+
+    # check url
+    captured = capsys.readouterr()
+    assert allowed_url in captured.out
