@@ -26,3 +26,26 @@ def test_static_and_auth_settings():
     assert settings.DEFAULT_AUTO_FIELD == "django.db.models.BigAutoField"
     assert settings.AUTH_USER_MODEL == "users.EmailUser"
     assert settings.AUTHENTICATION_BACKENDS == ["users.backend.EmailBackend"]
+
+
+def test_production_settings():
+    """
+    Should have correct production settings.
+    """
+    with mock.patch.dict(
+        "os.environ",
+        {
+            "DEBUG": "False",
+            "ALLOWED_HOSTS": "example.com, www.example.com",
+        },
+    ):
+        prod_settings = importlib.reload(
+            importlib.import_module("backend.settings.production")
+        )
+
+    assert prod_settings.DEBUG == "False"
+    assert len(prod_settings.ALLOWED_HOSTS) == 2
+    assert prod_settings.CORS_ALLOW_ALL_ORIGINS == False
+    assert prod_settings.SESSION_COOKIE_SECURE == True
+    assert prod_settings.CSRF_COOKIE_SECURE == True
+    assert len(prod_settings.ALLOWED_FRONTEND_URLS) == 1

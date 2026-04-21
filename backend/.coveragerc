@@ -1,3 +1,10 @@
 [run]
 source = ./
-omit = */tests/* , ./satisfactions/management/commands/*, */__init__.py, */migrations/*
+omit =
+    */tests/* ,
+    ./satisfactions/management/commands/*,
+    */__init__.py,
+    */migrations/*,
+    manage.py,
+    backend/asgi.py,
+    backend/wsgi.py

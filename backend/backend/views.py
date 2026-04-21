@@ -18,7 +18,7 @@ User = get_user_model()
 
 
 class LogoutView(APIView):
-    permission_classes = [AllowAny]  # même sans token valide, on peut logout
+    permission_classes = [AllowAny]
 
     def post(self, request):
         response = Response({"detail": "Déconnecté."})
