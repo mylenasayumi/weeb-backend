@@ -119,7 +119,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
@@ -209,7 +208,7 @@ JAZZMIN_SETTINGS = {
     # Weeb Logo
     "site_logo": "img/weeb.svg",
     "login_logo": "img/weeb.svg",
-    "site_icon": "img/weeb.svg",
+    "site_icon": "img/weeb-favicon.ico",
     "search_model": [
         "users.EmailUser",
         "articles.Article",
@@ -342,30 +341,4 @@ JAZZMIN_UI_TWEAKS = {
             }
         ],
     },
-}
-
-JAZZMIN_UI_TWEAKS = {
-    "theme": "pulse",
-    "theme_colour": "purple",
-    "navbar": "navbar-primary",
-    "brand_colour": "navbar-dark",
-    "accent": "accent-primary",
-    "sidebar": "sidebar-dark",
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": True,
-    "sidebar_nav_compact_style": False,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": False,
-    "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success",
-    },
-    "show_ui_builder": False,  # toggle it
-    "site_icon": "weeb-favicon.ico",
-    "login_logo": None,
 }

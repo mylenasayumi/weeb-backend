@@ -74,3 +74,5 @@ urlpatterns = [
         name="password_reset_confirm",
     ),
 ]
+
+admin.site.index_title = ""
