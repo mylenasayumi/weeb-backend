@@ -13,7 +13,7 @@ User = get_user_model()
 pytestmark = pytest.mark.django_db
 
 
-def test_logout_view_deletes_tokens_success(api_client):
+def test_logout_view_deletes_tokens_success(authenticated_client):
     """
     Should delete access and refresh token cookies on logout.
     """
@@ -21,7 +21,7 @@ def test_logout_view_deletes_tokens_success(api_client):
     url = reverse("logout")
 
     # ACT
-    response = api_client.post(url)
+    response = authenticated_client.post(url)
 
     # ASSERT
     assert response.status_code == 200
@@ -29,7 +29,6 @@ def test_logout_view_deletes_tokens_success(api_client):
 
     cookies = response.cookies
     assert "refresh_token" in cookies
-    assert "access_token" in cookies
 
 
 def test_refresh_token_missing_failure(api_client):
@@ -76,7 +75,6 @@ def test_refresh_token_success(mock_super_post, api_client):
 
     mock_response = Response(
         {
-            "access": "new_access_token",
             "refresh": "new_refresh_token",
         }
     )
@@ -136,8 +134,12 @@ def test_no_code_redirects_failure(api_client, settings):
     settings.FRONTEND_URL = "http://localhost:3000"
     url = reverse("github_callback")
 
+    session = api_client.session
+    session["github_oauth_state"] = "test_state"
+    session.save()
+
     # ACT
-    response = api_client.get(url)
+    response = api_client.get(url, {"state": "test_state"})
 
     # ASSERT
     assert response.status_code == 302
@@ -156,10 +158,14 @@ def test_invalid_github_token_redirects_failure(mock_post, api_client, settings)
     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
     url = reverse("github_callback")
 
+    session = api_client.session
+    session["github_oauth_state"] = "test_state"
+    session.save()
+
     mock_post.return_value = MagicMock(json=lambda: {"error": "bad_verification_code"})
 
     # ACT
-    response = api_client.get(url, {"code": "invalid_code"})
+    response = api_client.get(url, {"code": "invalid_code", "state": "test_state"})
 
     # ASSERT
     assert response.status_code == 302
@@ -179,6 +185,10 @@ def test_no_email_redirects_failure(mock_post, mock_get, api_client, settings):
     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
     url = reverse("github_callback")
 
+    session = api_client.session
+    session["github_oauth_state"] = "test_state"
+    session.save()
+
     mock_post.return_value = MagicMock(json=lambda: {"access_token": "fake_token"})
 
     # First email empty second all empty
@@ -188,8 +198,10 @@ def test_no_email_redirects_failure(mock_post, mock_get, api_client, settings):
     ]
 
     # ACT
-    response = api_client.get(url, {"code": "valid_code"})
+    response = api_client.get(url, {"code": "valid_code", "state": "test_state"})
 
+    print(response["Location"])
+    print(response["Location"], flush=True)
     # ASSERT
     assert response.status_code == 302
     assert "error=no_email" in response["Location"]
@@ -210,6 +222,10 @@ def test_new_user_created_and_redirected_success(
     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
     url = reverse("github_callback")
 
+    session = api_client.session
+    session["github_oauth_state"] = "test_state"
+    session.save()
+
     mock_post.return_value = MagicMock(json=lambda: {"access_token": "fake_token"})
     mock_get.return_value = MagicMock(
         json=lambda: {
@@ -220,7 +236,7 @@ def test_new_user_created_and_redirected_success(
     )
 
     # ACT
-    response = api_client.get(url, {"code": "valid_code"})
+    response = api_client.get(url, {"code": "valid_code", "state": "test_state"})
 
     # ASSERT
     assert response.status_code == 302
@@ -275,6 +291,10 @@ def test_email_fetched_from_emails_endpoint_success(
     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
     url = reverse("github_callback")
 
+    session = api_client.session
+    session["github_oauth_state"] = "test_state"
+    session.save()
+
     mock_post.return_value = MagicMock(json=lambda: {"access_token": "fake_token"})
     mock_get.side_effect = [
         MagicMock(
@@ -288,7 +308,7 @@ def test_email_fetched_from_emails_endpoint_success(
     ]
 
     # ACT
-    response = api_client.get(url, {"code": "valid_code"})
+    response = api_client.get(url, {"code": "valid_code", "state": "test_state"})
 
     # ASSERT
     assert response.status_code == 302

@@ -43,7 +43,7 @@ def test_production_settings():
             importlib.import_module("backend.settings.production")
         )
 
-    assert prod_settings.DEBUG == "False"
+    assert prod_settings.DEBUG == False
     assert len(prod_settings.ALLOWED_HOSTS) == 2
     assert prod_settings.CORS_ALLOW_ALL_ORIGINS == False
     assert prod_settings.SESSION_COOKIE_SECURE == True

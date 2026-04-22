@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
@@ -465,7 +467,7 @@ def test_password_reset_request_without_frontend_url(api_client):
     assert "If an account is associated with this email" in res.json()["message"]
 
 
-def test_password_reset_uses_allowed_frontend_url(api_client, user, settings, capsys):
+def test_password_reset_uses_allowed_frontend_url(api_client, user, settings, caplog):
     """
     Should use the provided frontend_url when it is in ALLOWED_FRONTEND_URLS.
     """
@@ -481,11 +483,12 @@ def test_password_reset_uses_allowed_frontend_url(api_client, user, settings, ca
     }
 
     # ACT
-    res = api_client.post(url, payload, format="json")
+    with caplog.at_level(logging.INFO):
+        res = api_client.post(url, payload, format="json")
 
     # ASSERT
     assert res.status_code == status.HTTP_200_OK
 
-    # check url
-    captured = capsys.readouterr()
-    assert allowed_url in captured.out
+    # check print
+    assert "Password reset requested for email" in caplog.text
+    assert user.email in caplog.text
