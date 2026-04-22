@@ -89,6 +89,23 @@ def test_set_views_on_create_failure(authenticated_client):
     assert response.json()["views"] == 0
 
 
+def test_create_article_not_authenticated_failure():
+    """
+    Should reject article creation when user is not authenticated.
+    """
+    client = APIClient()
+    list_url = reverse("articles-list")
+
+    data = {
+        "title": "Unauthorized user article",
+        "description": "This article should not be created.",
+        "image": "",
+    }
+
+    response = client.post(list_url, data=data, format="json")
+    assert response.status_code == 403
+
+
 ############ LIST & RETRIEVE ############
 def test_list_articles_with_pagination_success(authenticated_client, article):
     """

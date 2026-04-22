@@ -313,3 +313,55 @@ def test_email_fetched_from_emails_endpoint_success(
     # ASSERT
     assert response.status_code == 302
     assert User.objects.filter(email="private@github.com").exists()
+
+
+@patch("backend.views.RefreshToken")
+def test_logout_view_blacklists_refresh_token_success(
+    mock_refresh_token_class, authenticated_client
+):
+    """
+    Should blacklist refresh token when cookie is present
+    """
+    # ARRANGE
+    url = reverse("logout")
+    mock_refresh_token_class.return_value = MagicMock()
+    authenticated_client.cookies["refresh_token"] = "new_refresh_token"
+
+    # ACT
+    response = authenticated_client.post(url)
+
+    # ASSERT
+    assert response.status_code == 200
+    assert response.data["detail"] == "Déconnecté."
+
+    mock_refresh_token_class.assert_called_once_with("new_refresh_token")
+    
+    cookies = response.cookies
+    assert "refresh_token" in cookies
+
+
+@patch("backend.views.logger.warning")
+@patch("backend.views.RefreshToken")
+def test_logout_view_logs_warning_if_blacklist_fails(
+    mock_refresh_token_class, mock_logger_warning, authenticated_client
+):
+    """
+    Should logout if refresh token blacklist fails
+    """
+    # ARRANGE
+    url = reverse("logout")
+    mock_refresh_token_class.side_effect = Exception("blacklist failed")
+    authenticated_client.cookies["refresh_token"] = "new_refresh_token"
+
+    # ACT
+    response = authenticated_client.post(url)
+
+    # ASSERT
+    assert response.status_code == 200
+    assert response.data["detail"] == "Déconnecté."
+
+    mock_refresh_token_class.assert_called_once_with("new_refresh_token")
+    mock_logger_warning.assert_called_once()
+
+    cookies = response.cookies
+    assert "refresh_token" in cookies
