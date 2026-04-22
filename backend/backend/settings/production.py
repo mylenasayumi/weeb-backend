@@ -9,6 +9,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-ci")
 
 DEBUG = os.getenv("DEBUG", False).lower() == "true"
 
+print("TEST ICI ", DEBUG)
+print("TEST ICI ", DEBUG, flush=True)
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 CORS_ALLOW_ALL_ORIGINS = False
