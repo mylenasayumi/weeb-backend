@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     # tiers
     "corsheaders",
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "django_filters",
     # apps
     "users",
@@ -157,6 +158,8 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_email",
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 # Logging
@@ -196,7 +199,6 @@ GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 GITHUB_CALLBACK_URL = os.getenv("GITHUB_CALLBACK_URL")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL")
-
 
 JAZZMIN_SETTINGS = {
     "custom_css": "css/admin_custom.css",
@@ -342,3 +344,17 @@ JAZZMIN_UI_TWEAKS = {
         ],
     },
 }
+
+
+# ==============================================================================
+# EMAIL SMTP
+# ==============================================================================
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")

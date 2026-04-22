@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import send_mail
 from django.utils.encoding import smart_bytes, smart_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, permissions, status, viewsets
@@ -60,10 +61,18 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             response = super().create(request, *args, **kwargs)
             logger.info(f"User created: email={email} from ip={ip}")
-        except:
-            logger.warning(f"Failed user created for email={email} from ip={ip}")
+        except Exception as e:
+            logger.warning(f"Failed user created for email={email} from ip={ip}: {e}")
             raise
 
+        if email:
+            send_mail(
+                subject="WEEB - Welcome",
+                message=f"Your account is successfully created.\n Please wait your approval.",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email],
+                fail_silently=False,
+            )
         return response
 
 
@@ -88,6 +97,7 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             frontend_url = request.data.get("frontend_url")
+
             if frontend_url and frontend_url in settings.ALLOWED_FRONTEND_URLS:
                 selected_frontend_url = frontend_url
             else:
@@ -101,10 +111,14 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
                 f"{selected_frontend_url}/reset-password?uidb64={uidb64}&token={token}"
             )
 
-            # Email sending simulation
-            print(f"---- RESET EMAIL SENT TO {user.email} ----")
-            print(f"Link: {reset_url}")
-            print("------------------------------------------------------")
+            send_mail(
+                subject="WEEB - Reset your password",
+                message=f"Click here to reset your password: {reset_url}",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
             logger.info(f"Password reset requested for email={user.email}")
             logger.debug(f"Reset link: {reset_url}")
 
