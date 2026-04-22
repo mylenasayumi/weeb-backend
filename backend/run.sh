@@ -1,5 +1,7 @@
 ## PROD ONLY
 
+python manage.py collectstatic --no-input
+
 # Create migrations && Apply migrations
 python manage.py makemigrations
 python manage.py migrate
@@ -50,6 +52,8 @@ else
     echo "Missing models: ${models_dataframes[*]} , generating them, can take a long time..."
     python -u manage.py create_models
 fi
+
+
 
 # Start server -- STIL TESTING
 echo "Starting Gunicorn..."
