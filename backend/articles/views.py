@@ -3,6 +3,7 @@ import logging
 from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
 
 from .models import Article
@@ -39,6 +40,8 @@ class ArticleViewSet(viewsets.ModelViewSet):
         """
         Associate the current authentified user
         """
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied("Authentication required to create an article.")
         serializer.save(user=self.request.user)
 
     def update(self, request, *args, **kwargs):
