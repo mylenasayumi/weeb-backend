@@ -89,11 +89,10 @@ def test_set_views_on_create_failure(authenticated_client):
     assert response.json()["views"] == 0
 
 
-def test_create_article_not_authenticated_failure():
+def test_create_article_not_authenticated_failure(api_client):
     """
     Should reject article creation when user is not authenticated.
     """
-    client = APIClient()
     list_url = reverse("articles-list")
 
     data = {
@@ -102,7 +101,7 @@ def test_create_article_not_authenticated_failure():
         "image": "",
     }
 
-    response = client.post(list_url, data=data, format="json")
+    response = api_client.post(list_url, data=data, format="json")
     assert response.status_code == 403
 
 
