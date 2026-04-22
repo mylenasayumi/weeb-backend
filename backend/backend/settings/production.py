@@ -7,7 +7,7 @@ from backend.settings.base import *
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-ci")
 
-DEBUG = os.getenv("DEBUG", False)
+DEBUG = os.getenv("DEBUG", False).lower() == "true"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
