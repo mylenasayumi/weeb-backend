@@ -1,11 +1,12 @@
 import logging
+import secrets
 
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
@@ -18,12 +19,19 @@ User = get_user_model()
 
 
 class LogoutView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception as exc:
+                logger.warning(f"Failed to blacklist refresh token: {exc}")
         response = Response({"detail": "Déconnecté."})
-        response.delete_cookie("refresh_token")
-        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token", path="/")
         return response
 
 
@@ -36,7 +44,9 @@ class CookieTokenRefreshView(TokenRefreshView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        request.data["refresh"] = refresh_token
+        data = request.data.copy()
+        data["refresh"] = refresh_token
+        request._full_data = data
 
         try:
             response = super().post(request, *args, **kwargs)
@@ -51,6 +61,10 @@ class CookieTokenRefreshView(TokenRefreshView):
                 httponly=True,
                 secure=not settings.DEBUG,
                 samesite="Lax",
+                max_age=int(
+                    settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+                ),
+                path="/",
             )
 
         return response
@@ -64,8 +78,8 @@ class MyTokenObtainPairView(TokenObtainPairView):
         try:
             response = super().post(request, *args, **kwargs)
             logger.info(f"JWT token obtained for email={email} from ip={ip}")
-        except:
-            logger.warning(f"Failed JWT login for email={email} from ip={ip}")
+        except Exception as exc:
+            logger.warning(f"Failed JWT login for email={email} from ip={ip}: {exc}")
             raise
 
         refresh_token = response.data.pop("refresh", None)
@@ -76,6 +90,10 @@ class MyTokenObtainPairView(TokenObtainPairView):
                 httponly=True,
                 secure=not settings.DEBUG,
                 samesite="Lax",
+                max_age=int(
+                    settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+                ),
+                path="/",
             )
 
         return response
@@ -89,11 +107,16 @@ class GithubLoginRedirectView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        state = secrets.token_urlsafe(32)
+
+        request.session["github_oauth_state"] = state
+
         github_auth_url = (
             f"https://github.com/login/oauth/authorize"
             f"?client_id={settings.GITHUB_CLIENT_ID}"
             f"&redirect_uri={settings.GITHUB_CALLBACK_URL}"
             f"&scope=user:email"
+            f"&state={state}"
         )
         return redirect(github_auth_url)
 
@@ -107,6 +130,14 @@ class GithubCallbackView(APIView):
 
     def get(self, request):
         code = request.GET.get("code")
+        returned_state = request.GET.get("state")
+        saved_state = request.session.get("github_oauth_state")
+
+        if not returned_state or returned_state != saved_state:
+            return redirect(f"{settings.FRONTEND_URL}/login?error=invalid_state")
+
+        request.session.pop("github_oauth_state", None)
+
         if not code:
             return redirect(f"{settings.FRONTEND_URL}/login?error=no_code")
 
@@ -169,22 +200,18 @@ class GithubCallbackView(APIView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        response = redirect(f"{settings.FRONTEND_URL}/auth/callback")
-
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=False,
-            secure=not settings.DEBUG,
-            samesite="Lax",
-            max_age=60,
+        response = redirect(
+            f"{settings.FRONTEND_URL}/auth/callback#access_token={access_token}"
         )
+
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
             secure=not settings.DEBUG,
             samesite="Lax",
+            max_age=int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()),
+            path="/",
         )
 
         return response
