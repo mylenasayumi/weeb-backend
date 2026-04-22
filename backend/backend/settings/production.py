@@ -41,3 +41,9 @@ CSRF_COOKIE_SAMESITE = "None"
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+
+# ==============================================================================
+# JAZZMIN_SETTINGS
+# ==============================================================================
+JAZZMIN_SETTINGS["topmenu_links"][6]["url"] = "https://weeb-backend-mcg6.onrender.com/admin_tools_stats/analytics/"
