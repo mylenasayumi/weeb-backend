@@ -32,9 +32,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Frontend URLs : should be set to the actual frontend URLs in production
 # ==============================================================================
 
-ALLOWED_FRONTEND_URLS = [
-    "http://localhost:5173",  # Vite dev server
-]
+ALLOWED_FRONTEND_URLS = os.getenv("ALLOWED_FRONTEND_URLS", "").split(",")
 
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
