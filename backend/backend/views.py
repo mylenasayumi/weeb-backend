@@ -1,5 +1,6 @@
 import logging
 import secrets
+from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
@@ -52,8 +53,6 @@ class CookieTokenRefreshView(TokenRefreshView):
         try:
             response = super().post(request, *args, **kwargs)
         except (InvalidToken, TokenError) as e:
-            print("LAAA probleme de response  ", response, flush=True)
-
             return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
         refresh_token = response.data.pop("refresh", None)
@@ -114,10 +113,20 @@ class GithubLoginRedirectView(APIView):
 
         request.session["github_oauth_state"] = state
 
-        print("request.headers ", request.headers, flush=True)
+        referer = request.headers.get("Referer", "")
+        parsed = urlparse(referer)
+        request_origin = f"{parsed.scheme}://{parsed.netloc}"
 
-        request_origin = request.headers.get("Origin")
-        print("request_origin flush ", request_origin, flush=True)
+        if not settings.CORS_ALLOW_ALL_ORIGINS:
+            if (
+                not request_origin
+                or request_origin not in settings.CORS_ALLOWED_ORIGINS
+            ):
+                return Response(
+                    {"error": "Unauthorized origin"}, status=status.HTTP_403_FORBIDDEN
+                )
+
+        request.session["github_oauth_frontend"] = request_origin
 
         github_auth_url = (
             f"https://github.com/login/oauth/authorize"
@@ -140,20 +149,25 @@ class GithubCallbackView(APIView):
         code = request.GET.get("code")
         returned_state = request.GET.get("state")
         saved_state = request.session.get("github_oauth_state")
+        frontend_url = request.session.get("github_oauth_frontend")
 
-        request_origin = request.headers.get("Origin")
-        print("request_origin flush ", request_origin, flush=True)
-        print("request_origin  ", request_origin)
+        if not frontend_url:
+            return Response(
+                {"error": "Unauthorized origin"}, status=status.HTTP_403_FORBIDDEN
+            )
 
-        print("request.session ", request.session, flush=True)
+        if frontend_url not in settings.CORS_ALLOWED_ORIGINS:
+            return Response(
+                {"error": "Unauthorized origin"}, status=status.HTTP_403_FORBIDDEN
+            )
 
         if not returned_state or returned_state != saved_state:
-            return redirect(f"{settings.FRONTEND_URL}/login?error=invalid_state")
+            return redirect(f"{frontend_url}/login?error=invalid_state")
 
         request.session.pop("github_oauth_state", None)
 
         if not code:
-            return redirect(f"{settings.FRONTEND_URL}/login?error=no_code")
+            return redirect(f"{frontend_url}/login?error=no_code")
 
         token_response = requests.post(
             "https://github.com/login/oauth/access_token",
@@ -169,7 +183,7 @@ class GithubCallbackView(APIView):
         github_token = token_data.get("access_token")
 
         if not github_token:
-            return redirect(f"{settings.FRONTEND_URL}/login?error=token_failed")
+            return redirect(f"{frontend_url}/login?error=token_failed")
 
         headers = {"Authorization": f"Bearer {github_token}"}
         user_response = requests.get("https://api.github.com/user", headers=headers)
@@ -188,7 +202,7 @@ class GithubCallbackView(APIView):
             email = primary["email"] if primary else None
 
         if not email:
-            return redirect(f"{settings.FRONTEND_URL}/login?error=no_email")
+            return redirect(f"{frontend_url}/login?error=no_email")
 
         name = github_user.get("name") or github_user.get("login") or ""
         parts = name.split(" ", 1)
@@ -214,9 +228,7 @@ class GithubCallbackView(APIView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        response = redirect(
-            f"{settings.FRONTEND_URL}/auth/callback#access_token={access_token}"
-        )
+        response = redirect(f"{frontend_url}/auth/callback#access_token={access_token}")
 
         response.set_cookie(
             key="refresh_token",

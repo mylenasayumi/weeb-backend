@@ -37,6 +37,7 @@ def test_production_settings():
         {
             "DEBUG": "False",
             "ALLOWED_HOSTS": "example.com, www.example.com",
+            "CORS_ALLOWED_ORIGINS": "http://test.com",
         },
     ):
         prod_settings = importlib.reload(
@@ -48,4 +49,4 @@ def test_production_settings():
     assert prod_settings.CORS_ALLOW_ALL_ORIGINS == False
     assert prod_settings.SESSION_COOKIE_SECURE == True
     assert prod_settings.CSRF_COOKIE_SECURE == True
-    assert len(prod_settings.ALLOWED_FRONTEND_URLS) == 1
+    assert len(prod_settings.CORS_ALLOWED_ORIGINS) == 1

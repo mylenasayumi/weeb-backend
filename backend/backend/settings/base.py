@@ -198,7 +198,6 @@ GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 GITHUB_CALLBACK_URL = os.getenv("GITHUB_CALLBACK_URL")
 
-FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 JAZZMIN_SETTINGS = {
     "custom_css": "css/admin_custom.css",
