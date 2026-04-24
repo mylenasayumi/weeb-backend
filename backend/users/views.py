@@ -84,6 +84,7 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
 
     serializer_class = PasswordResetRequestSerializer
     throttle_classes = [PasswordResetThrottle]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -96,20 +97,21 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
             # Generate token
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-            frontend_url = request.data.get("frontend_url")
 
-            if frontend_url and frontend_url in settings.ALLOWED_FRONTEND_URLS:
-                selected_frontend_url = frontend_url
-            else:
-                selected_frontend_url = (
-                    settings.ALLOWED_FRONTEND_URLS[0]
-                    if settings.ALLOWED_FRONTEND_URLS
-                    else "http://localhost:5173"
-                )
+            request_origin = request.headers.get("Origin")
 
-            reset_url = (
-                f"{selected_frontend_url}/reset-password?uidb64={uidb64}&token={token}"
-            )
+            # prod
+            if settings.CORS_ALLOW_ALL_ORIGINS == False:
+                if (
+                    not request_origin
+                    or request_origin not in settings.CORS_ALLOWED_ORIGINS
+                ):
+                    return Response(
+                        {"error", "Unauthorized origin"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+            reset_url = f"{request_origin}/reset-password?uidb64={uidb64}&token={token}"
 
             send_mail(
                 subject="WEEB - Reset your password",

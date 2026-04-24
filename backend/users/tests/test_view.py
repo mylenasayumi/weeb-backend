@@ -469,12 +469,12 @@ def test_password_reset_request_without_frontend_url(api_client):
 
 def test_password_reset_uses_allowed_frontend_url(api_client, user, settings, caplog):
     """
-    Should use the provided frontend_url when it is in ALLOWED_FRONTEND_URLS.
+    Should use the provided frontend_url when it is in CORS_ALLOWED_ORIGINS.
     """
 
     # ARRANGE
     allowed_url = "http://localhost:3000"
-    settings.ALLOWED_FRONTEND_URLS = [allowed_url]
+    settings.CORS_ALLOWED_ORIGINS = [allowed_url]
 
     url = reverse("password_reset_request")
     payload = {
