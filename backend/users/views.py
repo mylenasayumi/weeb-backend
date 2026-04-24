@@ -16,6 +16,7 @@ from .serializers import (
     UserCreateSerializer,
     UserSerializer,
 )
+from .throttling import PasswordResetThrottle
 
 User = get_user_model()
 logger = logging.getLogger("users")
@@ -82,7 +83,7 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
     """
 
     serializer_class = PasswordResetRequestSerializer
-    throttle_classes = []
+    throttle_classes = [PasswordResetThrottle]
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
