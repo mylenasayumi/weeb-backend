@@ -114,7 +114,7 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
                     or request_origin not in settings.CORS_ALLOWED_ORIGINS
                 ):
                     return Response(
-                        {"error", "Unauthorized origin"},
+                        {"error": "Unauthorized origin"},
                         status=status.HTTP_403_FORBIDDEN,
                     )
 
