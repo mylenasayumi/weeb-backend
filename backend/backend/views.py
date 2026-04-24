@@ -39,7 +39,7 @@ class LogoutView(APIView):
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
-        print("ICI PIERRE pas de refresh roken ", refresh_token, flush=True)
+
         if not refresh_token:
             return Response(
                 {"detail": "Refresh token manquant."},
@@ -150,8 +150,6 @@ class GithubCallbackView(APIView):
         returned_state = request.GET.get("state")
         saved_state = request.session.get("github_oauth_state")
         frontend_url = request.session.get("github_oauth_frontend")
-
-        print("\n\n fixing bug", flush=True)
 
         print("saved_state", saved_state, flush=True)
         print("frontend_url", frontend_url, flush=True)
