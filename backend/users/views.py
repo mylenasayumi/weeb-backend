@@ -87,49 +87,58 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data["email"]
-        user = User.objects.filter(email=email).first()
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
 
-        logger.info(f"RequestPasswordResetEmailView")
-        logger.info(f"{email}")
-        logger.info(f"{user}")
+            email = serializer.validated_data["email"]
+            user = User.objects.filter(email=email).first()
 
-        if user:
-            # Generate token
-            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
-            token = PasswordResetTokenGenerator().make_token(user)
+            logger.info(f"RequestPasswordResetEmailView")
+            logger.info(f"{email}")
+            logger.info(f"{user}")
 
-            request_origin = request.headers.get("Origin")
-            referer = request.headers.get("Referer")
-            logger.info(f" referer {referer}")
-            logger.info(f" request_origin {request_origin}")
-            logger.info(f" CORS_ALLOWED_ORIGINS {settings.CORS_ALLOWED_ORIGINS}")
-            # prod
-            if settings.CORS_ALLOW_ALL_ORIGINS == False:
-                if (
-                    not request_origin
-                    or request_origin not in settings.CORS_ALLOWED_ORIGINS
-                ):
-                    return Response(
-                        {"error": "Unauthorized origin"},
-                        status=status.HTTP_403_FORBIDDEN,
-                    )
+            if user:
+                # Generate token
+                uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+                token = PasswordResetTokenGenerator().make_token(user)
 
-            reset_url = f"{request_origin}/reset-password?uidb64={uidb64}&token={token}"
-            logger.info(f" reset_url {reset_url}")
-            send_mail(
-                subject="WEEB - Reset your password",
-                message=f"Click here to reset your password: {reset_url}",
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
+                request_origin = request.headers.get("Origin")
+                referer = request.headers.get("Referer")
+                logger.info(f" referer {referer}")
+                logger.info(f" request_origin {request_origin}")
+                logger.info(f" CORS_ALLOWED_ORIGINS {settings.CORS_ALLOWED_ORIGINS}")
+                # prod
+                if settings.CORS_ALLOW_ALL_ORIGINS == False:
+                    if (
+                        not request_origin
+                        or request_origin not in settings.CORS_ALLOWED_ORIGINS
+                    ):
+                        return Response(
+                            {"error": "Unauthorized origin"},
+                            status=status.HTTP_403_FORBIDDEN,
+                        )
 
-            logger.info(f"Password reset requested for email={user.email}")
-            logger.debug(f"Reset link: {reset_url}")
+                reset_url = (
+                    f"{request_origin}/reset-password?uidb64={uidb64}&token={token}"
+                )
+                logger.info(f" reset_url {reset_url}")
+                send_mail(
+                    subject="WEEB - Reset your password",
+                    message=f"Click here to reset your password: {reset_url}",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+
+                logger.info(f"Password reset requested for email={user.email}")
+                logger.debug(f"Reset link: {reset_url}")
+
+        except Exception as e:
+            logger.warning(f"errur : {e}")
+
+            raise
 
         # Always returns the same response, regardless of whether the user exists or not.
         return Response(
