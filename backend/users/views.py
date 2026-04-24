@@ -93,7 +93,9 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
         email = serializer.validated_data["email"]
         user = User.objects.filter(email=email).first()
 
-        print("email ", email, user, flush=True)
+        logger.info(f"RequestPasswordResetEmailView")
+        logger.info(f"{email}")
+        logger.info(f"{user}")
 
         if user:
             # Generate token
@@ -101,8 +103,10 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
             token = PasswordResetTokenGenerator().make_token(user)
 
             request_origin = request.headers.get("Origin")
-
-            print("request_origin ", request_origin, flush=True)
+            referer = request.headers.get("Referer")
+            logger.info(f" referer {referer}")
+            logger.info(f" request_origin {request_origin}")
+            logger.info(f" CORS_ALLOWED_ORIGINS {settings.CORS_ALLOWED_ORIGINS}")
             # prod
             if settings.CORS_ALLOW_ALL_ORIGINS == False:
                 if (
@@ -115,7 +119,7 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
                     )
 
             reset_url = f"{request_origin}/reset-password?uidb64={uidb64}&token={token}"
-            print("reset_url ", reset_url, flush=True)
+            logger.info(f" reset_url {reset_url}")
             send_mail(
                 subject="WEEB - Reset your password",
                 message=f"Click here to reset your password: {reset_url}",
