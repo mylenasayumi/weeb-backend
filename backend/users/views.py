@@ -152,7 +152,7 @@ class RequestPasswordResetEmailView(generics.GenericAPIView):
 class PasswordResetConfirmView(generics.GenericAPIView):
     """
     Handle password reset confirmation
-    POST /api/users/password-reset/confirm/?uidb64=xxx&token=xxx
+    POST /api/users/password-reset/confirm/?uidb64=xxx
     """
 
     serializer_class = PasswordResetConfirmSerializer

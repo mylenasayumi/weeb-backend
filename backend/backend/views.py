@@ -151,9 +151,6 @@ class GithubCallbackView(APIView):
         saved_state = request.session.get("github_oauth_state")
         frontend_url = request.session.get("github_oauth_frontend")
 
-        print("saved_state", saved_state, flush=True)
-        print("frontend_url", frontend_url, flush=True)
-
         if not frontend_url:
             return Response(
                 {"error": "Unauthorized origin"}, status=status.HTTP_403_FORBIDDEN

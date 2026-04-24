@@ -142,7 +142,7 @@ REST_FRAMEWORK = {
     ),
     # Throttling
     "DEFAULT_THROTTLE_RATES": {
-        "password_reset": "600/hour",
+        "password_reset": "10/hour",
     },
 }
 
