@@ -38,6 +38,7 @@ class LogoutView(APIView):
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
+        print("ICI PIERRE pas de refresh roken ", refresh_token, flush=True)
         if not refresh_token:
             return Response(
                 {"detail": "Refresh token manquant."},
@@ -51,6 +52,8 @@ class CookieTokenRefreshView(TokenRefreshView):
         try:
             response = super().post(request, *args, **kwargs)
         except (InvalidToken, TokenError) as e:
+            print("LAAA probleme de response  ", response, flush=True)
+
             return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
         refresh_token = response.data.pop("refresh", None)
@@ -111,6 +114,11 @@ class GithubLoginRedirectView(APIView):
 
         request.session["github_oauth_state"] = state
 
+        print("request.headers ", request.headers, flush=True)
+
+        request_origin = request.headers.get("Origin")
+        print("request_origin flush ", request_origin, flush=True)
+
         github_auth_url = (
             f"https://github.com/login/oauth/authorize"
             f"?client_id={settings.GITHUB_CLIENT_ID}"
@@ -132,6 +140,12 @@ class GithubCallbackView(APIView):
         code = request.GET.get("code")
         returned_state = request.GET.get("state")
         saved_state = request.session.get("github_oauth_state")
+
+        request_origin = request.headers.get("Origin")
+        print("request_origin flush ", request_origin, flush=True)
+        print("request_origin  ", request_origin)
+
+        print("request.session ", request.session, flush=True)
 
         if not returned_state or returned_state != saved_state:
             return redirect(f"{settings.FRONTEND_URL}/login?error=invalid_state")
