@@ -9,7 +9,6 @@ from satisfactions.models import Satisfaction
 pytestmark = pytest.mark.django_db
 
 
-############ CREATE ############
 @pytest.mark.skipif(
     os.getenv("CI") == "true", reason="Skip test because no pkl files are pushed"
 )

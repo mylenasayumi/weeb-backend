@@ -35,6 +35,12 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
+        """
+        Permissions rules:
+            - me = authenticated users only
+            - partial_update / update / destroy => authenticated, admins
+            - all actions = public
+        """
         if self.action == "me":
             return [permissions.IsAuthenticated()]
         elif self.action in ["partial_update", "update", "destroy"]:
@@ -55,6 +61,10 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(UserSerializer(request.user).data)
 
     def create(self, request, *args, **kwargs):
+        """
+        POST /api/users/
+        Creates a new user account and sends a welcome email.
+        """
         email = request.data.get("email")
         ip = request.META.get("REMOTE_ADDR")
 

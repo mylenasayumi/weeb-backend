@@ -17,7 +17,6 @@ def test_create_user_success(api_client):
     """
     Should create a new user from the given data.
     """
-
     # ARRANGE
     url = reverse("users-list")
     payload = {
@@ -40,7 +39,6 @@ def test_create_user_same_email_failure(user, api_client):
     """
     Should not create a second user from the same data.
     """
-
     # ARRANGE
     url = reverse("users-list")
     expected_output = {"email": ["user with this email already exists."]}
@@ -63,7 +61,6 @@ def test_create_user_no_first_name_failure(api_client):
     """
     Should not create a user without a first name.
     """
-
     # ARRANGE
     url = reverse("users-list")
     expected_output = {"first_name": ["This field may not be blank."]}
@@ -86,7 +83,6 @@ def test_create_user_no_last_name_failure(api_client):
     """
     Should not create a user without a first name.
     """
-
     # ARRANGE
     url = reverse("users-list")
     expected_output = {"last_name": ["This field may not be blank."]}
@@ -268,11 +264,33 @@ def test_get_UserSerializer_success(user, authenticated_client):
     assert "email" in response.data["results"][0]
 
 
+def test_password_reset_unauthorized_origin_failure(api_client, user, settings):
+    """
+    Should return 403 if Origin header is not in CORS_ALLOWED_ORIGINS (prod mode).
+    """
+    # ARRANGE
+    settings.CORS_ALLOW_ALL_ORIGINS = False
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    url = reverse("password_reset_request")
+    payload = {"email": "john@example.com"}
+
+    # ACT
+    res = api_client.post(
+        url,
+        payload,
+        format="json",
+        HTTP_ORIGIN="http://evil-frontend.com",
+    )
+
+    # ASSERT
+    assert res.status_code == status.HTTP_403_FORBIDDEN
+    assert res.json()["error"] == "Unauthorized origin"
+
+
 def test_password_reset_request_success(api_client, user):
     """
     Test that a password reset request returns a generic success message and prints the reset link with the correct frontend_url.
     """
-
     # ARRANGE
     url = reverse("password_reset_request")
     payload = {
@@ -292,7 +310,6 @@ def test_password_reset_request_nonexistent_email(api_client):
     """
     Test that a password reset request for a nonexistent email still returns a generic success message.
     """
-
     # ARRANGE
     url = reverse("password_reset_request")
     payload = {
@@ -312,7 +329,6 @@ def test_password_reset_confirm_success(api_client, user):
     """
     Test that a valid token and uidb64 allow password reset.
     """
-
     # ARRANGE
     # Generate token for the user
     uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
@@ -336,7 +352,6 @@ def test_password_reset_confirm_invalid_token(api_client, user):
     """
     Test that an invalid token does not allow password reset.
     """
-
     # ARRANGE
     uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
     url = reverse("password_reset_confirm") + f"?uidb64={uidb64}"
@@ -354,7 +369,6 @@ def test_password_reset_confirm_uidb64_token_mismatch(api_client, user):
     """
     Test that a valid token for one user cannot be used with another user's uidb64.
     """
-
     # ARRANGE
     # Create a second user
     user2 = User.objects.create_user(
@@ -366,6 +380,7 @@ def test_password_reset_confirm_uidb64_token_mismatch(api_client, user):
 
     # Generate token for user1
     token = PasswordResetTokenGenerator().make_token(user)
+
     # Use user2's uidb64
     uidb64 = urlsafe_base64_encode(smart_bytes(user2.id))
     url = reverse("password_reset_confirm") + f"?uidb64={uidb64}"
@@ -383,7 +398,6 @@ def test_password_reset_request_email_missing_failure(api_client):
     """
     Test that a password reset request without an email returns an error.
     """
-
     # ARRANGE
     url = reverse("password_reset_request")
     payload = {"frontend_url": "http://testfrontend.com"}
@@ -401,7 +415,6 @@ def test_password_reset_confirm_invalid_uidb64(api_client):
     """
     Test that a password reset confirmation with an invalid uidb64 fails.
     """
-
     # ARRANGE
     url = reverse("password_reset_confirm") + "?uidb64=invaliduidb64"
     payload = {"token": "validtoken", "password": "newpass12345"}
@@ -419,7 +432,6 @@ def test_password_reset_confirm_missing_uidb64(api_client):
     Test that the password reset confirmation endpoint returns an error
     if the 'uidb64' parameter is missing in the request.
     """
-
     # ARRANGE
     url = reverse("password_reset_confirm")
     payload = {"token": "validtoken", "password": "newpass12345"}
@@ -436,7 +448,6 @@ def test_password_reset_request_with_frontend_url(api_client):
     """
     Test that the 'frontend_url' parameter is used correctly when provided in the request.
     """
-
     # ARRANGE
     url = reverse("password_reset_request")
     frontend_url = "http://customfrontend.com"
@@ -454,7 +465,6 @@ def test_password_reset_request_without_frontend_url(api_client):
     """
     Test that the default frontend URL is used when 'frontend_url' parameter is not provided in the request.
     """
-
     # ARRANGE
     url = reverse("password_reset_request")
     payload = {"email": "john@example.com"}
@@ -471,7 +481,6 @@ def test_password_reset_uses_allowed_frontend_url(api_client, user, settings, ca
     """
     Should use the provided frontend_url when it is in CORS_ALLOWED_ORIGINS.
     """
-
     # ARRANGE
     allowed_url = "http://localhost:3000"
     settings.CORS_ALLOWED_ORIGINS = [allowed_url]
