@@ -9,9 +9,11 @@ class ArticleSerializer(serializers.ModelSerializer):
     Custom validations for fields.
     """
 
+    likes_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Article
-        fields = ["id", "title", "description", "image", "user", "views"]
+        fields = ["id", "title", "description", "image", "user", "views", "likes_count"]
         extra_kwargs = {"user": {"read_only": True}, "views": {"read_only": True}}
 
     def validate_title(self, value):
@@ -31,3 +33,6 @@ class ArticleSerializer(serializers.ModelSerializer):
         if not value.strip():
             raise serializers.ValidationError("Description cannot be empty.")
         return value
+    
+    def get_likes_count(self, obj):
+        return obj.like_set.count()
