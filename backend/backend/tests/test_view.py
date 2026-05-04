@@ -270,7 +270,7 @@ def test_github_callback_missing_code_failure(api_client, settings):
     session.save()
 
     # ACT
-    response = api_client.get(url, {"state": "correct_state"})  # pas de code
+    response = api_client.get(url, {"state": "correct_state"})
 
     # ASSERT
     assert response.status_code == 302

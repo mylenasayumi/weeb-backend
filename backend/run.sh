@@ -1,5 +1,4 @@
 ## PROD ONLY
-
 python manage.py collectstatic --no-input
 
 # Create migrations && Apply migrations
@@ -10,7 +9,6 @@ python manage.py migrate
 python manage.py loaddata users/fixtures/users_fixtures.json || true
 python manage.py loaddata articles/fixtures/articles_fixtures.json || true
 python manage.py loaddata backend/fixtures/charts_fixtures.json || true
-
 
 ### Checking if dataframes are missing
 missing_dataframes=()
@@ -32,7 +30,6 @@ else
     python -u manage.py create_dataframes
 fi
 
-
 ### Checking if models are missing
 models_dataframes=()
 
@@ -53,9 +50,6 @@ else
     python -u manage.py create_models
 fi
 
-
-
 # Start server -- STIL TESTING
 echo "Starting Gunicorn..."
 exec gunicorn backend.wsgi:application -b 0.0.0.0:10000
-# exec gunicorn backend:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} --workers 4 --timeout 120

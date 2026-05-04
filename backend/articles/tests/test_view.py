@@ -11,7 +11,6 @@ User = get_user_model()
 pytestmark = pytest.mark.django_db
 
 
-############ CREATE ############
 def test_create_article_success(authenticated_client, article, article2):
     """
     Should create a new article when valid data is provided.
@@ -105,7 +104,6 @@ def test_create_article_not_authenticated_failure(api_client):
     assert response.status_code == 403
 
 
-############ LIST & RETRIEVE ############
 def test_list_articles_with_pagination_success(authenticated_client, article):
     """
     Should return a paginated list of articles.
@@ -157,7 +155,6 @@ def test_article_views_increment_multiple_times_success(authenticated_client, ar
     assert article.views == initial_views + 3
 
 
-############ SEARCH & ORDERING ############
 def test_search_article_by_title_success(authenticated_client, article, article2):
     """
     Should filter articles by title using the search parameter.
@@ -185,7 +182,6 @@ def test_ordering_articles_by_title_success(authenticated_client):
     assert titles == sorted(titles)
 
 
-############ UPDATE ############
 def test_update_article_success(authenticated_client, article, user):
     """
     Should update an existing article.
@@ -207,7 +203,6 @@ def test_update_article_success(authenticated_client, article, user):
     assert article.title == "New Title"
 
 
-############ PARTIAL UPDATE ############
 def test_partial_update_article_success(authenticated_client, article):
     """
     Should partial uppdate an existing article.
@@ -224,7 +219,6 @@ def test_partial_update_article_success(authenticated_client, article):
     assert article.title != data["description"]
 
 
-############ DELETE ############
 def test_delete_article_success(authenticated_client, article):
     """
     Should delete an existing article.

@@ -61,6 +61,5 @@ else
     python -u manage.py create_models
 fi
 
-
 # Start server
 python manage.py runserver 0.0.0.0:8000

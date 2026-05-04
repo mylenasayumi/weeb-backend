@@ -24,6 +24,10 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        """
+        POST /api/auth/logout/
+        Blacklists the refresh token and deletes its cookie.
+        """
         refresh_token = request.COOKIES.get("refresh_token")
 
         if refresh_token:
@@ -38,6 +42,11 @@ class LogoutView(APIView):
 
 
 class CookieTokenRefreshView(TokenRefreshView):
+    """
+    POST /api/auth/token/refresh/
+    Refresh refresh token in cookie
+    """
+
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
 
@@ -74,6 +83,11 @@ class CookieTokenRefreshView(TokenRefreshView):
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
+    """
+    POST /api/auth/token/
+    Logs in a user and moves the refresh token from the response body to a cookie.
+    """
+
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         ip = request.META.get("REMOTE_ADDR")
@@ -141,7 +155,7 @@ class GithubLoginRedirectView(APIView):
 
 class GithubCallbackView(APIView):
     """
-    Recieve the Github code, create user and send back access and refresh tokens
+    Receive the GitHub code, create a user, and send back access and refresh tokens
     """
 
     permission_classes = [AllowAny]
@@ -241,6 +255,10 @@ class ExchangeOauthCodeView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """
+        POST /api/auth/exchange/
+        Exchanges a temporary OAuth code for access and refresh tokens.
+        """
         code = request.data.get("code")
         if not code:
             return Response({"error": "Missing code"}, status=400)
