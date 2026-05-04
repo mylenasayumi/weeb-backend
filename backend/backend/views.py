@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.shortcuts import redirect
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -155,7 +156,6 @@ class GithubCallbackView(APIView):
             return Response(
                 {"error": "Unauthorized origin"}, status=status.HTTP_403_FORBIDDEN
             )
-
         if frontend_url not in settings.CORS_ALLOWED_ORIGINS:
             return Response(
                 {"error": "Unauthorized origin"}, status=status.HTTP_403_FORBIDDEN
@@ -165,7 +165,6 @@ class GithubCallbackView(APIView):
             return redirect(f"{frontend_url}/login?error=invalid_state")
 
         request.session.pop("github_oauth_state", None)
-
         if not code:
             return redirect(f"{frontend_url}/login?error=no_code")
 
@@ -228,16 +227,40 @@ class GithubCallbackView(APIView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        response = redirect(f"{frontend_url}/auth/callback#access_token={access_token}")
+        temp_code = secrets.token_urlsafe(32)
+        cache.set(
+            f"oauth_temp:{temp_code}",
+            {"access": access_token, "refresh": refresh_token},
+            timeout=300,
+        )
 
+        return redirect(f"{frontend_url}/auth/callback?code={temp_code}")
+
+
+class ExchangeOauthCodeView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        code = request.data.get("code")
+        if not code:
+            return Response({"error": "Missing code"}, status=400)
+
+        cache_key = f"oauth_temp:{code}"
+        tokens = cache.get(cache_key)
+
+        if not tokens:
+            return Response({"error": "Invalid or expired code"}, status=400)
+
+        cache.delete(cache_key)
+
+        response = Response({"access": tokens["access"]})
         response.set_cookie(
             key="refresh_token",
-            value=refresh_token,
+            value=tokens["refresh"],
             httponly=True,
             secure=not settings.DEBUG,
             samesite="Lax",
             max_age=int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()),
             path="/",
         )
-
         return response

@@ -29,6 +29,7 @@ from users.views import (
 
 from backend.views import (
     CookieTokenRefreshView,
+    ExchangeOauthCodeView,
     GithubCallbackView,
     GithubLoginRedirectView,
     LogoutView,
@@ -62,6 +63,7 @@ urlpatterns = [
         GithubCallbackView.as_view(),
         name="github_callback",
     ),
+    path("api/auth/exchange/", ExchangeOauthCodeView.as_view(), name="exchange_code"),
     # Reset password
     path(
         "api/users/password-reset/request/",

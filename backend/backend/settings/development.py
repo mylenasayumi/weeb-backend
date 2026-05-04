@@ -17,7 +17,7 @@ CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
-    "password_reset": "100/hour",
+    "password_reset": "1000/hour",
 }
 
 

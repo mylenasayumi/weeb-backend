@@ -268,6 +268,29 @@ def test_get_UserSerializer_success(user, authenticated_client):
     assert "email" in response.data["results"][0]
 
 
+def test_password_reset_unauthorized_origin_failure(api_client, user, settings):
+    """
+    Should return 403 if Origin header is not in CORS_ALLOWED_ORIGINS (prod mode).
+    """
+    # ARRANGE
+    settings.CORS_ALLOW_ALL_ORIGINS = False
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    url = reverse("password_reset_request")
+    payload = {"email": "john@example.com"}
+
+    # ACT
+    res = api_client.post(
+        url,
+        payload,
+        format="json",
+        HTTP_ORIGIN="http://evil-frontend.com",
+    )
+
+    # ASSERT
+    assert res.status_code == status.HTTP_403_FORBIDDEN
+    assert res.json()["error"] == "Unauthorized origin"
+
+
 def test_password_reset_request_success(api_client, user):
     """
     Test that a password reset request returns a generic success message and prints the reset link with the correct frontend_url.

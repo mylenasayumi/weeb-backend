@@ -126,193 +126,259 @@ def test_redirect_contains_callback_url_success(api_client, settings):
     assert "redirect_uri" in response["Location"]
 
 
-# def test_no_code_redirects_failure(api_client, settings):
-#     """
-#     Should return no_code if no code il url.
-#     """
-#     # ARRANGE
-#     settings.FRONTEND_URL = "http://localhost:3000"
-#     url = reverse("github_callback")
+def test_github_login_unauthorized_origin_failure(api_client, settings):
+    """
+    Should return 403 if Referer origin is not in CORS_ALLOWED_ORIGINS (prod mode).
+    """
+    # ARRANGE
+    settings.CORS_ALLOW_ALL_ORIGINS = False
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    settings.GITHUB_CLIENT_ID = "fake_client_id"
+    settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
+    url = reverse("github_login")
 
-#     session = api_client.session
-#     session["github_oauth_state"] = "test_state"
-#     session.save()
+    # ACT
+    response = api_client.get(url, HTTP_REFERER="http://evil-frontend.com/some/path")
 
-#     # ACT
-#     response = api_client.get(url, {"state": "test_state"})
-
-#     # ASSERT
-#     assert response.status_code == 302
-#     assert "error=no_code" in response["Location"]
-
-
-# @patch("backend.views.requests.post")
-# def test_invalid_github_token_redirects_failure(mock_post, api_client, settings):
-#     """
-#     Should return an error if github return no token.
-#     """
-#     # ARRAGE
-#     settings.FRONTEND_URL = "http://localhost:3000"
-#     settings.GITHUB_CLIENT_ID = "fake_client_id"
-#     settings.GITHUB_CLIENT_SECRET = "fake_secret"
-#     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
-#     url = reverse("github_callback")
-
-#     session = api_client.session
-#     session["github_oauth_state"] = "test_state"
-#     session.save()
-
-#     mock_post.return_value = MagicMock(json=lambda: {"error": "bad_verification_code"})
-
-#     # ACT
-#     response = api_client.get(url, {"code": "invalid_code", "state": "test_state"})
-
-#     # ASSERT
-#     assert response.status_code == 302
-#     assert "error=token_failed" in response["Location"]
+    # ASSERT
+    assert response.status_code == 403
+    assert response.json()["error"] == "Unauthorized origin"
 
 
-# @patch("backend.views.requests.get")
-# @patch("backend.views.requests.post")
-# def test_no_email_redirects_failure(mock_post, mock_get, api_client, settings):
-#     """
-#     Should return an error if no email is found.
-#     """
-#     # ARRANGE
-#     settings.FRONTEND_URL = "http://localhost:3000"
-#     settings.GITHUB_CLIENT_ID = "fake_client_id"
-#     settings.GITHUB_CLIENT_SECRET = "fake_secret"
-#     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
-#     url = reverse("github_callback")
+def test_no_code_redirects_failure(api_client, settings):
+    """
+    Should return no_code if no code il url.
+    """
+    # ARRANGE
+    settings.FRONTEND_URL = "http://localhost:3000"
+    url = reverse("exchange_code")
 
-#     session = api_client.session
-#     session["github_oauth_state"] = "test_state"
-#     session.save()
+    session = api_client.session
+    session["github_oauth_state"] = "test_state"
+    session.save()
 
-#     mock_post.return_value = MagicMock(json=lambda: {"access_token": "fake_token"})
+    # ACT
+    response = api_client.post(url, {"state": "test_state"})
 
-#     # First email empty second all empty
-#     mock_get.side_effect = [
-#         MagicMock(json=lambda: {"email": None, "name": "Ghost", "login": "ghost"}),
-#         MagicMock(json=lambda: []),
-#     ]
-
-#     # ACT
-#     response = api_client.get(url, {"code": "valid_code", "state": "test_state"})
-
-#     print(response["Location"])
-#     print(response["Location"], flush=True)
-#     # ASSERT
-#     assert response.status_code == 302
-#     assert "error=no_email" in response["Location"]
+    # ASSERT
+    assert response.status_code == 400
+    assert response.json()["error"] == "Missing code"
 
 
-# @patch("backend.views.requests.get")
-# @patch("backend.views.requests.post")
-# def test_new_user_created_and_redirected_success(
-#     mock_post, mock_get, api_client, settings
-# ):
-#     """
-#     Should create a new user and return token.
-#     """
-#     # ARRANGE
-#     settings.FRONTEND_URL = "http://localhost:3000"
-#     settings.GITHUB_CLIENT_ID = "fake_client_id"
-#     settings.GITHUB_CLIENT_SECRET = "fake_secret"
-#     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
-#     url = reverse("github_callback")
+def test_exchange_oauth_code_invalid_or_expired_code_failure(api_client):
+    """
+    Should return 400 if code is not found in cache (invalid or expired).
+    """
+    # ARRANGE
+    url = reverse("exchange_code")
+    payload = {"code": "nonexistent_code"}
 
-#     session = api_client.session
-#     session["github_oauth_state"] = "test_state"
-#     session.save()
+    # ACT
+    with patch("django.core.cache.cache.get", return_value=None):
+        response = api_client.post(url, payload, format="json")
 
-#     mock_post.return_value = MagicMock(json=lambda: {"access_token": "fake_token"})
-#     mock_get.return_value = MagicMock(
-#         json=lambda: {
-#             "email": "newuser@github.com",
-#             "name": "Jane Doe",
-#             "login": "janedoe",
-#         }
-#     )
-
-#     # ACT
-#     response = api_client.get(url, {"code": "valid_code", "state": "test_state"})
-
-#     # ASSERT
-#     assert response.status_code == 302
-#     assert "/auth/callback" in response["Location"]
-#     assert User.objects.filter(email="newuser@github.com").exists()
+    # ASSERT
+    assert response.status_code == 400
+    assert response.json()["error"] == "Invalid or expired code"
 
 
-# @patch("backend.views.requests.get")
-# @patch("backend.views.requests.post")
-# def test_user_created_with_correct_name_success(
-#     mock_post, mock_get, api_client, settings, user
-# ):
-#     """
-#     Should properly retrieve first and last name.
-#     """
-#     # ARRANGE
-#     settings.FRONTEND_URL = "http://localhost:3000"
-#     settings.GITHUB_CLIENT_ID = "fake_client_id"
-#     settings.GITHUB_CLIENT_SECRET = "fake_secret"
-#     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
-#     url = reverse("github_callback")
+def test_exchange_oauth_code_deletes_cache_after_use(api_client):
+    """
+    Should delete the cache entry after a successful exchange (one-time use).
+    """
+    # ARRANGE
+    url = reverse("exchange_code")
+    payload = {"code": "valid_code"}
+    fake_tokens = {"access": "fake_access_token", "refresh": "fake_refresh_token"}
 
-#     mock_post.return_value = MagicMock(json=lambda: {"access_token": "fake_token"})
-#     mock_get.return_value = MagicMock(
-#         json=lambda: {
-#             "email": "john@example.com",
-#             "name": "John Doe",
-#             "login": "JD",
-#         }
-#     )
+    # ACT
+    with patch(
+        "django.core.cache.cache.get", return_value=fake_tokens
+    ) as mock_get, patch("django.core.cache.cache.delete") as mock_delete:
+        api_client.post(url, payload, format="json")
 
-#     # ACT
-#     api_client.get(url, {"code": "valid_code"})
-
-#     # ASSERT
-#     assert user.first_name == "John"
-#     assert user.last_name == "Doe"
+    # ASSERT
+    mock_get.assert_called_once_with("oauth_temp:valid_code")
+    mock_delete.assert_called_once_with("oauth_temp:valid_code")
 
 
-# @patch("backend.views.requests.get")
-# @patch("backend.views.requests.post")
-# def test_email_fetched_from_emails_endpoint_success(
-#     mock_post, mock_get, api_client, settings
-# ):
-#     """
-#     Should retrieve email from verified emails.
-#     """
-#     # ARRANGE
-#     settings.FRONTEND_URL = "http://localhost:3000"
-#     settings.GITHUB_CLIENT_ID = "fake_client_id"
-#     settings.GITHUB_CLIENT_SECRET = "fake_secret"
-#     settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
-#     url = reverse("github_callback")
+def test_github_callback_missing_frontend_url_failure(api_client, settings):
+    """
+    Should return 403 if frontend_url is missing from session.
+    """
+    # ARRANGE
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    url = reverse("github_callback")
 
-#     session = api_client.session
-#     session["github_oauth_state"] = "test_state"
-#     session.save()
+    # ACT
+    response = api_client.get(url)
 
-#     mock_post.return_value = MagicMock(json=lambda: {"access_token": "fake_token"})
-#     mock_get.side_effect = [
-#         MagicMock(
-#             json=lambda: {"email": None, "name": "Private User", "login": "privateuser"}
-#         ),
-#         MagicMock(
-#             json=lambda: [
-#                 {"email": "private@github.com", "primary": True, "verified": True},
-#             ]
-#         ),
-#     ]
+    # ASSERT
+    assert response.status_code == 403
+    assert response.json()["error"] == "Unauthorized origin"
 
-#     # ACT
-#     response = api_client.get(url, {"code": "valid_code", "state": "test_state"})
 
-#     # ASSERT
-#     assert response.status_code == 302
-#     assert User.objects.filter(email="private@github.com").exists()
+def test_github_callback_unauthorized_frontend_url_failure(api_client, settings):
+    """
+    Should return 403 if frontend_url is not in CORS_ALLOWED_ORIGINS.
+    """
+    # ARRANGE
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    url = reverse("github_callback")
+    session = api_client.session
+    session["github_oauth_frontend"] = "http://evil-frontend.com"
+    session.save()
+
+    # ACT
+    response = api_client.get(url)
+
+    # ASSERT
+    assert response.status_code == 403
+    assert response.json()["error"] == "Unauthorized origin"
+
+
+def test_github_callback_invalid_state_failure(api_client, settings):
+    """
+    Should redirect to /login?error=invalid_state if state does not match.
+    """
+    # ARRANGE
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    url = reverse("github_callback")
+    session = api_client.session
+    session["github_oauth_frontend"] = "http://allowed-frontend.com"
+    session["github_oauth_state"] = "correct_state"
+    session.save()
+
+    # ACT
+    response = api_client.get(url, {"code": "somecode", "state": "wrong_state"})
+
+    # ASSERT
+    assert response.status_code == 302
+    assert "error=invalid_state" in response["Location"]
+
+
+def test_github_callback_missing_code_failure(api_client, settings):
+    """
+    Should redirect to /login?error=no_code if code is missing.
+    """
+    # ARRANGE
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    url = reverse("github_callback")
+    session = api_client.session
+    session["github_oauth_frontend"] = "http://allowed-frontend.com"
+    session["github_oauth_state"] = "correct_state"
+    session.save()
+
+    # ACT
+    response = api_client.get(url, {"state": "correct_state"})  # pas de code
+
+    # ASSERT
+    assert response.status_code == 302
+    assert "error=no_code" in response["Location"]
+
+
+def test_github_callback_token_exchange_failed_failure(api_client, settings):
+    """
+    Should redirect to /login?error=token_failed if GitHub does not return an access_token.
+    """
+    # ARRANGE
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    settings.GITHUB_CLIENT_ID = "fake_client_id"
+    settings.GITHUB_CLIENT_SECRET = "fake_secret"
+    settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
+    url = reverse("github_callback")
+    session = api_client.session
+    session["github_oauth_frontend"] = "http://allowed-frontend.com"
+    session["github_oauth_state"] = "correct_state"
+    session.save()
+
+    mock_token_response = MagicMock()
+    mock_token_response.json.return_value = {}
+
+    # ACT
+    with patch("requests.post", return_value=mock_token_response):
+        response = api_client.get(url, {"code": "somecode", "state": "correct_state"})
+
+    # ASSERT
+    assert response.status_code == 302
+    assert "error=token_failed" in response["Location"]
+
+
+def test_github_callback_no_email_anywhere_failure(api_client, settings):
+    """
+    Should redirect to /login?error=no_email if no email found on profile or /user/emails.
+    """
+    # ARRANGE
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    settings.GITHUB_CLIENT_ID = "fake_client_id"
+    settings.GITHUB_CLIENT_SECRET = "fake_secret"
+    settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
+    url = reverse("github_callback")
+    session = api_client.session
+    session["github_oauth_frontend"] = "http://allowed-frontend.com"
+    session["github_oauth_state"] = "correct_state"
+    session.save()
+
+    mock_token_response = MagicMock()
+    mock_token_response.json.return_value = {"access_token": "fake_github_token"}
+
+    mock_user_response = MagicMock()
+    mock_user_response.json.return_value = {
+        "email": None,
+        "name": "John Doe",
+        "login": "johndoe",
+    }
+
+    mock_emails_response = MagicMock()
+    mock_emails_response.json.return_value = []
+
+    # ACT
+    with patch("requests.post", return_value=mock_token_response), patch(
+        "requests.get", side_effect=[mock_user_response, mock_emails_response]
+    ):
+        response = api_client.get(url, {"code": "somecode", "state": "correct_state"})
+
+    # ASSERT
+    assert response.status_code == 302
+    assert "error=no_email" in response["Location"]
+
+
+def test_github_callback_success_with_email_on_profile(api_client, settings):
+    """
+    Should create user and redirect to /auth/callback?code=... when email is on GitHub profile.
+    """
+    # ARRANGE
+    settings.CORS_ALLOWED_ORIGINS = ["http://allowed-frontend.com"]
+    settings.GITHUB_CLIENT_ID = "fake_client_id"
+    settings.GITHUB_CLIENT_SECRET = "fake_secret"
+    settings.GITHUB_CALLBACK_URL = "http://localhost:8000/api/auth/github/callback/"
+    url = reverse("github_callback")
+    session = api_client.session
+    session["github_oauth_frontend"] = "http://allowed-frontend.com"
+    session["github_oauth_state"] = "correct_state"
+    session.save()
+
+    mock_token_response = MagicMock()
+    mock_token_response.json.return_value = {"access_token": "fake_github_token"}
+
+    mock_user_response = MagicMock()
+    mock_user_response.json.return_value = {
+        "email": "john@example.com",
+        "name": "John Doe",
+        "login": "johndoe",
+    }
+
+    # ACT
+    with patch("requests.post", return_value=mock_token_response), patch(
+        "requests.get", return_value=mock_user_response
+    ), patch("django.core.cache.cache.set") as mock_cache_set:
+        response = api_client.get(url, {"code": "somecode", "state": "correct_state"})
+
+    # ASSERT
+    assert response.status_code == 302
+    assert "/auth/callback?code=" in response["Location"]
+    mock_cache_set.assert_called_once()
+    assert User.objects.filter(email="john@example.com").exists()
 
 
 @patch("backend.views.RefreshToken")
