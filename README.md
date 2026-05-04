@@ -1,6 +1,7 @@
 # Weeb Backend
 
-A Django REST API backend with machine learning capabilities, providing user management, article handling, and satisfaction tracking.
+A Django REST API backend with machine learning capabilities, providing user management, article handling, like system and satisfaction tracking.
+It also send email after creating user or while reseting your password.
 
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mylenasayumi/weeb-backend)
 
@@ -9,6 +10,7 @@ A Django REST API backend with machine learning capabilities, providing user man
 
 - **Framework**: Django with Django REST Framework
 - **Database**: MySQL
+- **Cache**: Redis
 - **Containerization**: Docker & Docker Compose
 - **ML Libraries**: Integrated machine learning tools
 - **CORS**: Django CORS Headers for cross-origin requests
@@ -63,6 +65,13 @@ git lfs pull
    DATA_PATH= If you do not want to move everything use => "./data/"
    DEBUG=True => for dev False => for prod
    SECRET_KEY=YOUR_SECRET_DJANGO_KEY
+   GITHUB_CLIENT_ID='Enter_your_id'
+   GITHUB_CLIENT_SECRET='Enter_your_secret'
+   GITHUB_CALLBACK_URL='Enter_your_callback_url'
+   CORS_ALLOWED_ORIGINS="enter_frontend_url"
+   EMAIL_HOST_USER="Enter_your_stmp_gmail_user"
+   EMAIL_HOST_PASSWORD="Enter_your_stmp_gmail_password"
+   REDIS_URL="REDIS_CACHE"
    ```
 
 4. **Build and start services**
@@ -84,6 +93,7 @@ On first startup, the application automatically creates:
   - 1 Admin user: `username: admin` | `password: admin`
   - 4 Regular users: `password: Password12345@`
 - **10 sample articles**
+- **Graphs fixtures for backend**
 
 ### Data Storage
 
@@ -121,17 +131,14 @@ docker compose exec api python manage.py <command>
 ### Run Tests
 
 ```bash
-docker compose exec api coverage run manage.py test
-```
-```bash
-docker compose exec api pytest  --cov  --cov-report=term-missing
+docker compose exec api pytest
 ```
 
 ### Generate Coverage Report
 
 **Terminal output:**
 ```bash
-docker compose exec api coverage report
+docker compose exec api pytest  --cov --cov-report=term-missing
 ```
 
 **HTML report:**
@@ -190,20 +197,51 @@ pre-commit run --all-files
 ```
 weeb-backend/
 ├── users/              # User management app
+│   ├── tests/
+│   ├── fixtures/
+│   ├── migrations/
 │   ├── models.py
 │   ├── views.py
 │   ├── serializers.py
+│   ├── throttling.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── backend.py
+│   ├── managers.py
 │   └── tests.py
 ├── articles/           # Article management app
+│   ├── tests/
+│   ├── fixtures/
 │   ├── models.py
 │   ├── views.py
-│   ├── serializers.py
-│   └── tests.py
+│   ├── apps.py
+│   ├── admin.py
+│   ├── permissions.py
+│   └── serializers.py
 ├── satisfactions/      # Satisfaction tracking app
+│   ├── tests/
+│   ├── management/
 │   ├── models.py
+│   ├── apps.py
+│   ├── admin.py
 │   ├── views.py
-│   ├── serializers.py
-│   └── tests.py
+│   └── serializers.py
+├── likes/      # Like management app
+│   ├── tests/
+│   ├── models.py
+│   ├── apps.py
+│   ├── admin.py
+│   ├── views.py
+│   └── serializers.py
+├── backend/      # Backend management app
+│   ├── tests/
+│   ├── fixtures/
+│   ├── settings/
+│   ├── static/
+│   ├── wshi.py
+│   ├── asgi.py
+│   ├── urls.py
+│   └── views.py
 ├── data/               # CSV storage directory
 ├── manage.py
 ├── docker-compose.yml
