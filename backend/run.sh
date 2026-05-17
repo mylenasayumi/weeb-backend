@@ -20,7 +20,7 @@ fi
 
 # French file
 if ! find . -name "dataframe_fr.csv" | grep -q .; then
-    missing_files+=("dataframe_en.csv")
+    missing_files+=("dataframe_fr.csv")
 fi
 
 if [ ${#missing_files[@]} -eq 0 ]; then
